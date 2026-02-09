@@ -12,6 +12,10 @@ on:
         required: true
         default: 'phase1'
 
+permissions:
+  contents: write
+  packages: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
