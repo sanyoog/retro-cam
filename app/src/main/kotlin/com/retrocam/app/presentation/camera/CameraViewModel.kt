@@ -109,6 +109,14 @@ class CameraViewModel @Inject constructor(
                         Log.e(TAG, "Photo capture failed: ${result.message}")
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Photo capture exception", e)
+                _captureResult.value = CaptureResult.Error("Failed to capture: ${e.message}")
+            }
+        }
+    }
+
+    fun toggleCameraMode() {
         val newMode = if (_cameraState.value.mode == CameraMode.NORMAL) {
             CameraMode.PRO
         } else {
@@ -151,15 +159,7 @@ class CameraViewModel @Inject constructor(
     }
 
     fun updateExposureCompensation(ev: Int) {
-        updateManualSettings(_manualSettings.value.copy(exposureCompensation = ev)AL) CameraMode.PRO else CameraMode.NORMAL
-            )
-        }
-        Log.d(TAG, "Camera mode: ${_cameraState.value.mode}")
-    }
-
-    fun updateManualSettings(settings: ManualSettings) {
-        _manualSettings.value = settings
-        cameraRepository.applyManualSettings(settings)
+        updateManualSettings(_manualSettings.value.copy(exposureCompensation = ev))
     }
 
     fun clearCaptureResult() {

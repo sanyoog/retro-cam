@@ -177,6 +177,30 @@ private fun CameraOverlay(
         BottomControls(
             onCaptureClick = onCaptureClick,
             modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+        )
+
+        // Pro controls panel (slide up from bottom)
+        if (showProControls && cameraCapabilities != null) {
+            ProControlsPanel(
+                manualSettings = manualSettings,
+                cameraCapabilities = cameraCapabilities,
+                onSettingsChange = onManualSettingsChange,
+                onClose = { showProControls = false },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        }
+    }
+}
+
+@Composable
+private fun TopBar(
+    cameraMode: CameraMode,
+    onModeToggle: () -> Unit,
     onProControlsToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -227,30 +251,7 @@ private fun CameraOverlay(
                         tint = GlassWhite,
                         modifier = Modifier.size(20.dp)
                     )
-                }ontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Mode indicator
-            GlassPanel(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(
-                    text = if (cameraMode == CameraMode.NORMAL) "NORMAL" else "PRO",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = GlassWhite
-                )
-            }
-
-            // Settings button
-            GlassButton(
-                onClick = onModeToggle,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = GlassWhite
-                )
+                }
             }
         }
     }
