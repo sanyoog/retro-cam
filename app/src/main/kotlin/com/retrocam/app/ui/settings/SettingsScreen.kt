@@ -1,0 +1,388 @@
+package com.retrocam.app.ui.settings
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.HdrStrong
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.retrocam.app.presentation.settings.SettingsViewModel
+import com.retrocam.app.ui.components.GlassButton
+import com.retrocam.app.ui.components.GlassPanel
+import com.retrocam.app.ui.theme.GlassBlack
+import com.retrocam.app.ui.theme.GlassWhite
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    onNavigateBack: () -> Unit,
+    onAboutClick: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
+    val hapticsEnabled by viewModel.hapticsEnabled.collectAsStateWithLifecycle()
+    val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(GlassBlack)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                GlassButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = GlassWhite
+                    )
+                }
+                
+                Text(
+                    text = "Settings",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = GlassWhite,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                // Placeholder for symmetry
+                Spacer(modifier = Modifier.size(48.dp))
+            }
+            
+            // Settings content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Feedback Section
+                SettingsSection(title = "Feedback") {
+                    SettingsSwitchItem(
+                        icon = Icons.Default.MusicNote,
+                        title = "Camera Sounds",
+                        description = "Play shutter sound when taking photos",
+                        checked = soundEnabled,
+                        onCheckedChange = { viewModel.toggleSound(it) }
+                    )
+                    
+                    SettingsSwitchItem(
+                        icon = Icons.Default.Vibration,
+                        title = "Haptic Feedback",
+                        description = "Vibrate on button presses and actions",
+                        checked = hapticsEnabled,
+                        onCheckedChange = { viewModel.toggleHaptics(it) }
+                    )
+                }
+                
+                // Photo Quality Section
+                SettingsSection(title = "Photo Quality") {
+                    SettingsQualityItem(
+                        icon = Icons.Default.HdrStrong,
+                        title = "Capture Quality",
+                        description = "Higher quality = larger file size",
+                        selectedQuality = photoQuality,
+                        onQualitySelected = { viewModel.setPhotoQuality(it) }
+                    )
+                }
+                
+                // About Section
+                SettingsSection(title = "About") {
+                    SettingsActionItem(
+                        icon = Icons.Default.Info,
+                        title = "About RetroCam",
+                        description = "Version 1.2.0 • Phase 4",
+                        onClick = onAboutClick
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = GlassWhite.copy(alpha = 0.6f),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        
+        GlassPanel(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsSwitchItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onCheckedChange(!checked) }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = GlassWhite.copy(alpha = 0.7f),
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = GlassWhite
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GlassWhite.copy(alpha = 0.5f)
+                )
+            }
+        }
+        
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = GlassWhite,
+                checkedTrackColor = GlassWhite.copy(alpha = 0.3f),
+                uncheckedThumbColor = GlassWhite.copy(alpha = 0.5f),
+                uncheckedTrackColor = GlassWhite.copy(alpha = 0.1f)
+            )
+        )
+    }
+}
+
+@Composable
+private fun SettingsQualityItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    selectedQuality: Int,
+    onQualitySelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { expanded = !expanded }
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = GlassWhite.copy(alpha = 0.7f),
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = GlassWhite
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GlassWhite.copy(alpha = 0.5f)
+                )
+            }
+            
+            Text(
+                text = when (selectedQuality) {
+                    0 -> "Low"
+                    1 -> "Medium"
+                    else -> "High"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = GlassWhite.copy(alpha = 0.7f)
+            )
+        }
+        
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column(
+                modifier = Modifier.padding(top = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                listOf(
+                    Triple(0, "Low", "Fast capture, smaller files"),
+                    Triple(1, "Medium", "Balanced quality and size"),
+                    Triple(2, "High", "Best quality, larger files")
+                ).forEach { (quality, label, desc) ->
+                    QualityOption(
+                        label = label,
+                        description = desc,
+                        selected = selectedQuality == quality,
+                        onClick = { 
+                            onQualitySelected(quality)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QualityOption(
+    label: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .background(
+                if (selected) GlassWhite.copy(alpha = 0.1f)
+                else Color.Transparent
+            )
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = GlassWhite
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = GlassWhite.copy(alpha = 0.5f)
+            )
+        }
+        
+        if (selected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Selected",
+                tint = GlassWhite,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsActionItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = GlassWhite.copy(alpha = 0.7f),
+            modifier = Modifier.size(24.dp)
+        )
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = GlassWhite
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = GlassWhite.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
