@@ -43,9 +43,6 @@ android {
         abi {
             isEnable = false // Disable to create universal APK
         }
-        density {
-            isEnable = false
-        }
     }
 
     // Ensure universal APK is built

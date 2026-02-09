@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoMode
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FlipCameraAndroid
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
@@ -202,7 +202,7 @@ private fun CameraOverlay(
                 ) {
                     Icon(
                         imageVector = if (cameraMode == CameraMode.PRO) 
-                            Icons.Default.Settings else Icons.Default.AutoMode,
+                            Icons.Default.Settings else Icons.Default.Camera,
                         contentDescription = null,
                         tint = GlassWhite,
                         modifier = Modifier.size(18.dp)

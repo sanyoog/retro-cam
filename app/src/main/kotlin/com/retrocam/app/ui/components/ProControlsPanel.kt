@@ -9,7 +9,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Brightness6
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.Exposure
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,7 +96,7 @@ fun ProControlsPanel(
                         onSettingsChange(currentSettings.copy(shutterSpeed = (it * 1_000_000).toLong()))
                     },
                     valueFormatter = { "1/${(1000 / it).roundToInt()}s" },
-                    icon = Icons.Default.ShutterSpeed
+                    icon = Icons.Default.CameraAlt
                 )
             }
 
@@ -125,7 +130,7 @@ fun ProControlsPanel(
                             else -> "${(1f / it * 100).roundToInt()}cm"
                         }
                     },
-                    icon = Icons.Default.CenterFocusWeak
+                    icon = Icons.Default.CenterFocusStrong
                 )
             }
 
