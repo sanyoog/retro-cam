@@ -4,6 +4,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CaptureRequest
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraInfo
@@ -93,7 +94,7 @@ class ManualCameraController @Inject constructor() {
      */
     fun applyManualSettings(settings: ManualSettings) {
         camera2Control?.let { control ->
-            val builder = Camera2CameraControl.CaptureRequestOptions.Builder()
+            val builder = Camera2Interop.CaptureRequestOptions.Builder()
             
             // Manual ISO
             settings.iso?.let { iso ->
@@ -154,7 +155,7 @@ class ManualCameraController @Inject constructor() {
      */
     fun resetToAuto() {
         camera2Control?.let { control ->
-            val builder = Camera2CameraControl.CaptureRequestOptions.Builder()
+            val builder = Camera2Interop.CaptureRequestOptions.Builder()
             builder.setCaptureRequestOption(
                 CaptureRequest.CONTROL_AE_MODE,
                 CaptureRequest.CONTROL_AE_MODE_ON
