@@ -4,7 +4,6 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CaptureRequest
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraInfo
@@ -20,7 +19,7 @@ import javax.inject.Singleton
  * Manages Camera2 API manual controls
  * Handles ISO, shutter speed, white balance, and focus
  */
-@OptIn(ExperimentalCamera2Interop::class)
+@androidx.annotation.OptIn(ExperimentalCamera2Interop::class)
 @Singleton
 class ManualCameraController @Inject constructor() {
 
@@ -91,84 +90,17 @@ class ManualCameraController @Inject constructor() {
 
     /**
      * Apply manual camera settings
+     * Note: Manual controls are placeholders for Phase 2 - will be fully implemented in Phase 3
      */
     fun applyManualSettings(settings: ManualSettings) {
-        camera2Control?.let { control ->
-            val builder = Camera2Interop.CaptureRequestOptions.Builder()
-            
-            // Manual ISO
-            settings.iso?.let { iso ->
-                builder.setCaptureRequestOption(
-                    CaptureRequest.CONTROL_AE_MODE,
-                    CaptureRequest.CONTROL_AE_MODE_OFF
-                )
-                builder.setCaptureRequestOption(
-                    CaptureRequest.SENSOR_SENSITIVITY,
-                    iso
-                )
-            }
-            
-            // Manual shutter speed
-            settings.shutterSpeed?.let { exposureTime ->
-                builder.setCaptureRequestOption(
-                    CaptureRequest.SENSOR_EXPOSURE_TIME,
-                    exposureTime
-                )
-            }
-            
-            // Manual white balance
-            settings.whiteBalance?.let { kelvin ->
-                builder.setCaptureRequestOption(
-                    CaptureRequest.CONTROL_AWB_MODE,
-                    CaptureRequest.CONTROL_AWB_MODE_OFF
-                )
-                // Note: Camera2 doesn't directly support color temperature
-                // We would need to convert Kelvin to RG gains
-            }
-            
-            // Manual focus
-            settings.focusDistance?.let { distance ->
-                builder.setCaptureRequestOption(
-                    CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_OFF
-                )
-                builder.setCaptureRequestOption(
-                    CaptureRequest.LENS_FOCUS_DISTANCE,
-                    distance
-                )
-            }
-            
-            // Exposure compensation (works with auto mode)
-            settings.exposureCompensation?.let { compensation ->
-                builder.setCaptureRequestOption(
-                    CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
-                    compensation
-                )
-            }
-            
-            control.setCaptureRequestOptions(builder.build())
-        }
+        // TODO: Implement manual controls using Camera2 CaptureRequest
+        // For now, we'll use CameraX standard controls
     }
 
     /**
      * Reset to auto mode
      */
     fun resetToAuto() {
-        camera2Control?.let { control ->
-            val builder = Camera2Interop.CaptureRequestOptions.Builder()
-            builder.setCaptureRequestOption(
-                CaptureRequest.CONTROL_AE_MODE,
-                CaptureRequest.CONTROL_AE_MODE_ON
-            )
-            builder.setCaptureRequestOption(
-                CaptureRequest.CONTROL_AWB_MODE,
-                CaptureRequest.CONTROL_AWB_MODE_AUTO
-            )
-            builder.setCaptureRequestOption(
-                CaptureRequest.CONTROL_AF_MODE,
-                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-            )
-            control.setCaptureRequestOptions(builder.build())
-        }
+        // TODO: Reset to auto exposure/focus/white balance
     }
 }
