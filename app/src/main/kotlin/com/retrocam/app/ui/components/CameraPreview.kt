@@ -31,9 +31,10 @@ fun CameraPreview(
     DisposableEffect(key1 = lifecycleOwner) {
         val cameraProvider = viewModel.getCameraProvider()
         val preview = viewModel.getPreview()
+        val imageCapture = viewModel.getImageCapture()
         val cameraSelector = viewModel.getCameraSelector()
 
-        if (cameraProvider != null && preview != null) {
+        if (cameraProvider != null && preview != null && imageCapture != null) {
             try {
                 // Unbind all use cases before rebinding
                 cameraProvider.unbindAll()
@@ -41,11 +42,12 @@ fun CameraPreview(
                 // Set surface provider
                 preview.setSurfaceProvider(previewView.surfaceProvider)
 
-                // Bind use cases to camera
+                // Bind use cases to camera (MUST include imageCapture!)
                 val camera = cameraProvider.bindToLifecycle(
                     lifecycleOwner,
                     cameraSelector,
-                    preview
+                    preview,
+                    imageCapture  // This was missing!
                 )
                 
                 // Set camera reference in ViewModel for manual controls

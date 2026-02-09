@@ -2,6 +2,14 @@ package com.retrocam.app.ui.camera
 
 import android.Manifest
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +43,7 @@ import com.retrocam.app.domain.model.CaptureResult
 import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.presentation.camera.CameraViewModel
+import com.retrocam.app.ui.components.AnimatedShutterButton
 import com.retrocam.app.ui.components.CameraPreview
 import com.retrocam.app.ui.components.CaptureFlashAnimation
 import com.retrocam.app.ui.components.FilterPanel
@@ -65,6 +74,7 @@ fun CameraScreen(
     val currentFilter by viewModel.currentFilter.collectAsStateWithLifecycle()
     val lastPhotoUri by viewModel.lastPhotoUri.collectAsStateWithLifecycle()
     val captureFlashTrigger by viewModel.captureFlashTrigger.collectAsStateWithLifecycle()
+    val hapticsEnabled by viewModel.hapticsEnabled.collectAsStateWithLifecycle()
     
     var showFilterPanel by remember { mutableStateOf(false) }
     var galleryThumbnail by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
@@ -105,7 +115,9 @@ fun CameraScreen(
         when (captureResult) {
             is CaptureResult.Success -> {
                 // Success haptic feedback
-                HapticFeedback.success(context)
+                if (hapticsEnabled) {
+                    HapticFeedback.success(context)
+                }
                 Toast.makeText(
                     context,
                     "Photo saved!",
@@ -115,7 +127,9 @@ fun CameraScreen(
             }
             is CaptureResult.Error -> {
                 // Error haptic feedback
-                HapticFeedback.error(context)
+                if (hapticsEnabled) {
+                    HapticFeedback.error(context)
+                }
                 Toast.makeText(
                     context,
                     "Failed to capture: ${(captureResult as CaptureResult.Error).message}",
@@ -153,8 +167,11 @@ fun CameraScreen(
                     showFilterPanel = showFilterPanel,
                     galleryThumbnail = galleryThumbnail,
                     loadingThumbnail = loadingThumbnail,
+                    hapticsEnabled = hapticsEnabled,
                     onCaptureClick = { 
-                        HapticFeedback.heavyImpact(context)
+                        if (hapticsEnabled) {
+                            HapticFeedback.heavyImpact(context)
+                        }
                         viewModel.capturePhoto() 
                     },
                     onModeToggle = { 
@@ -214,6 +231,7 @@ private fun CameraOverlay(
     showFilterPanel: Boolean,
     galleryThumbnail: androidx.compose.ui.graphics.ImageBitmap?,
     loadingThumbnail: Boolean,
+    hapticsEnabled: Boolean,
     onCaptureClick: () -> Unit,
     onModeToggle: () -> Unit,
     onManualSettingsChange: (ManualSettings) -> Unit,
@@ -233,6 +251,7 @@ private fun CameraOverlay(
         // Top bar
         TopBar(
             cameraMode = cameraMode,
+            hapticsEnabled = hapticsEnabled,
             onModeToggle = onModeToggle,
             onProControlsToggle = { showProControls = !showProControls },
             onFilterToggle = onFilterToggle,
@@ -254,7 +273,20 @@ private fun CameraOverlay(
         )
 
         // Filter panel (slide up from bottom)
-        if (showFilterPanel) {
+        AnimatedVisibility(
+            visible = showFilterPanel,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ) + fadeIn(tween(200)),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(300)
+            ) + fadeOut(tween(200))
+        ) {
             FilterPanel(
                 currentFilter = currentFilter,
                 onFilterChange = onFilterChange,
@@ -266,17 +298,32 @@ private fun CameraOverlay(
         }
 
         // Pro controls panel (slide up from bottom)
-        if (showProControls && cameraCapabilities != null) {
-            ProControlsPanel(
-                visible = showProControls,
-                capabilities = cameraCapabilities,
-                currentSettings = manualSettings,
-                onSettingsChange = onManualSettingsChange,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-            )
+        AnimatedVisibility(
+            visible = showProControls && cameraCapabilities != null,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ) + fadeIn(tween(200)),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(300)
+            ) + fadeOut(tween(200))
+        ) {
+            cameraCapabilities?.let { caps ->
+                ProControlsPanel(
+                    visible = true,
+                    capabilities = caps,
+                    currentSettings = manualSettings,
+                    onSettingsChange = onManualSettingsChange,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                )
+            }
         }
     }
 }
@@ -284,6 +331,7 @@ private fun CameraOverlay(
 @Composable
 private fun TopBar(
     cameraMode: CameraMode,
+    hapticsEnabled: Boolean,
     onModeToggle: () -> Unit,
     onProControlsToggle: () -> Unit,
     onFilterToggle: () -> Unit,
@@ -303,7 +351,9 @@ private fun TopBar(
             // Mode indicator with toggle
             GlassButton(
                 onClick = { 
-                    HapticFeedback.mediumImpact(view)
+                    if (hapticsEnabled) {
+                        HapticFeedback.mediumImpact(view)
+                    }
                     onModeToggle() 
                 },
                 modifier = Modifier.height(40.dp),
@@ -336,7 +386,9 @@ private fun TopBar(
                 // Filter button
                 GlassButton(
                     onClick = { 
-                        HapticFeedback.lightTap(view)
+                        if (hapticsEnabled) {
+                            HapticFeedback.lightTap(view)
+                        }
                         onFilterToggle() 
                     },
                     modifier = Modifier.size(40.dp)
@@ -353,7 +405,9 @@ private fun TopBar(
                 if (cameraMode == CameraMode.PRO) {
                     GlassButton(
                         onClick = { 
-                            HapticFeedback.lightTap(view)
+                            if (hapticsEnabled) {
+                                HapticFeedback.lightTap(view)
+                            }
                             onProControlsToggle() 
                         },
                         modifier = Modifier.size(40.dp)
@@ -399,7 +453,7 @@ private fun BottomControls(
             )
 
             // Shutter button
-            ShutterButton(
+            AnimatedShutterButton(
                 onClick = onCaptureClick,
                 modifier = Modifier.size(80.dp)
             )

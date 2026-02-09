@@ -1,6 +1,6 @@
-package com.retrocam.app.presentation.camera
-
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.Camera
@@ -9,6 +9,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.retrocam.app.data.preferences.AppPreferences
 import com.retrocam.app.domain.camera.ManualCameraController
 import com.retrocam.app.domain.model.CameraCapabilities
 import com.retrocam.app.domain.model.CameraMode
@@ -17,6 +18,7 @@ import com.retrocam.app.domain.model.CaptureResult
 import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.domain.repository.CameraRepository
+import com.retrocam.app.domain.repository.FilterRepository
 import com.retrocam.app.util.SoundEffects
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,7 +35,9 @@ private const val TAG = "CameraViewModel"
 class CameraViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val cameraRepository: CameraRepository,
-    private val manualCameraController: ManualCameraController
+    private val manualCameraController: ManualCameraController,
+    private val filterRepository: FilterRepository,
+    private val appPreferences: AppPreferences
 ) : ViewModel() {
 
     private val _cameraState = MutableStateFlow(CameraState())
@@ -49,6 +53,28 @@ class CameraViewModel @Inject constructor(
     val captureFlashTrigger: StateFlow<Boolean> = _captureFlashTrigger.asStateFlow()
     
     val soundEffects = SoundEffects(context)
+    
+    // Observe preferences and update sound effects
+    val soundEnabled: StateFlow<Boolean> = appPreferences.soundEnabled.stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    
+    val hapticsEnabled: StateFlow<Boolean> = appPreferences.hapticsEnabled.stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    
+    init {
+        // Observe sound preference and update sound effects
+        viewModelScope.launch {
+            soundEnabled.collect { enabled ->
+                soundEffects.setSoundEnabled(enabled)
+            }
+        }
+    }
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageCapture: ImageCapture? = null
@@ -89,6 +115,8 @@ class CameraViewModel @Inject constructor(
 
     fun getPreview(): Preview? = preview
 
+    fun getImageCapture(): androidx.camera.core.ImageCapture? = imageCapture
+
     fun getCamera(): Camera? = camera
 
     fun setCamera(cam: Camera) {
@@ -123,21 +151,51 @@ class CameraViewModel @Inject constructor(
                 }
                 
                 val result = cameraRepository.capturePhoto(capture, settings)
-                _captureResult.value = result
                 
-                when (result) {
+                // Apply filter if one is selected (not NONE)
+                val finalResult = if (result is CaptureResult.Success && _currentFilter.value.type != com.retrocam.app.domain.model.FilterType.NONE) {
+                    applyFilterToPhoto(result.uri, _currentFilter.value) ?: result
+                } else {
+                    result
+                }
+                
+                _captureResult.value = finalResult
+                
+                when (finalResult) {
                     is CaptureResult.Success -> {
-                        Log.d(TAG, "Photo captured successfully: ${result.uri}")
-                        _lastPhotoUri.value = result.uri
+                        Log.d(TAG, "Photo captured successfully: ${finalResult.uri}")
+                        _lastPhotoUri.value = finalResult.uri
                     }
                     is CaptureResult.Error -> {
-                        Log.e(TAG, "Photo capture failed: ${result.message}")
+                        Log.e(TAG, "Photo capture failed: ${finalResult.message}")
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Photo capture exception", e)
                 _captureResult.value = CaptureResult.Error("Failed to capture: ${e.message}")
             }
+        }
+    }
+    
+    private suspend fun applyFilterToPhoto(uri: Uri, filterConfig: FilterConfig): CaptureResult? {
+        return try {
+            // Load the image
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                
+                // Apply filter
+                val filteredBitmap = filterRepository.applyFilter(bitmap, filterConfig)
+                
+                // Save filtered image (replace original)
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    filteredBitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
+                }
+                
+                CaptureResult.Success(uri = uri, filePath = uri.toString())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to apply filter", e)
+            null
         }
     }
 
