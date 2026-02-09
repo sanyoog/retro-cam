@@ -155,7 +155,7 @@ class ManualCameraController @Inject constructor() {
                 )
             } catch (e: Exception) {
                 // Log but don't crash - some devices may not support all controls
-                android.util.Log.e(\"ManualCameraController\", \"Failed to apply settings\", e)
+                android.util.Log.e("ManualCameraController", "Failed to apply settings", e)
             }
         }
     }
@@ -188,7 +188,7 @@ class ManualCameraController @Inject constructor() {
                         .build()
                 )
             } catch (e: Exception) {
-                android.util.Log.e(\"ManualCameraController\", \"Failed to reset to auto\", e)
+                android.util.Log.e("ManualCameraController", "Failed to reset to auto", e)
             }
         }
     }
