@@ -1,5 +1,7 @@
 package com.retrocam.app.presentation.camera
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.camera.core.Camera
 import androidx.camera.core.ImageCapture
@@ -15,7 +17,9 @@ import com.retrocam.app.domain.model.CaptureResult
 import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.domain.repository.CameraRepository
+import com.retrocam.app.util.SoundEffects
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +31,7 @@ private const val TAG = "CameraViewModel"
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val cameraRepository: CameraRepository,
     private val manualCameraController: ManualCameraController
 ) : ViewModel() {
@@ -36,6 +41,14 @@ class CameraViewModel @Inject constructor(
 
     private val _captureResult = MutableStateFlow<CaptureResult?>(null)
     val captureResult: StateFlow<CaptureResult?> = _captureResult.asStateFlow()
+    
+    private val _lastPhotoUri = MutableStateFlow<Uri?>(null)
+    val lastPhotoUri: StateFlow<Uri?> = _lastPhotoUri.asStateFlow()
+    
+    private val _captureFlashTrigger = MutableStateFlow(false)
+    val captureFlashTrigger: StateFlow<Boolean> = _captureFlashTrigger.asStateFlow()
+    
+    val soundEffects = SoundEffects(context)
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageCapture: ImageCapture? = null
@@ -94,6 +107,12 @@ class CameraViewModel @Inject constructor(
             _captureResult.value = CaptureResult.Error("Camera not ready")
             return
         }
+        
+        // Trigger flash animation
+        _captureFlashTrigger.value = !_captureFlashTrigger.value
+        
+        // Play shutter sound
+        soundEffects.playShutter()
 
         viewModelScope.launch {
             try {
@@ -109,6 +128,7 @@ class CameraViewModel @Inject constructor(
                 when (result) {
                     is CaptureResult.Success -> {
                         Log.d(TAG, "Photo captured successfully: ${result.uri}")
+                        _lastPhotoUri.value = result.uri
                     }
                     is CaptureResult.Error -> {
                         Log.e(TAG, "Photo capture failed: ${result.message}")
@@ -180,5 +200,6 @@ class CameraViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         cameraProvider?.unbindAll()
+        soundEffects.release()
     }
 }

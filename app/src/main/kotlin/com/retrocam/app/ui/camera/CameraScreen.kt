@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,7 +36,9 @@ import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.presentation.camera.CameraViewModel
 import com.retrocam.app.ui.components.CameraPreview
+import com.retrocam.app.ui.components.CaptureFlashAnimation
 import com.retrocam.app.ui.components.FilterPanel
+import com.retrocam.app.ui.components.GalleryThumbnail
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
 import com.retrocam.app.ui.components.ProControlsPanel
@@ -42,6 +46,9 @@ import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
 import com.retrocam.app.ui.theme.GlassWhite
 import com.retrocam.app.ui.theme.GlassSurfaceDark
+import com.retrocam.app.util.HapticFeedback
+import com.retrocam.app.util.ImageLoader
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -56,8 +63,39 @@ fun CameraScreen(
     val manualSettings by viewModel.manualSettings.collectAsStateWithLifecycle()
     val cameraCapabilities by viewModel.cameraCapabilities.collectAsStateWithLifecycle()
     val currentFilter by viewModel.currentFilter.collectAsStateWithLifecycle()
+    val lastPhotoUri by viewModel.lastPhotoUri.collectAsStateWithLifecycle()
+    val captureFlashTrigger by viewModel.captureFlashTrigger.collectAsStateWithLifecycle()
     
     var showFilterPanel by remember { mutableStateOf(false) }
+    var galleryThumbnail by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var loadingThumbnail by remember { mutableStateOf(false) }
+    
+    val scope = rememberCoroutineScope()
+    
+    // Load thumbnail when last photo changes
+    LaunchedEffect(lastPhotoUri) {
+        lastPhotoUri?.let { uri ->
+            loadingThumbnail = true
+            scope.launch {
+                val bitmap = ImageLoader.loadThumbnail(context, uri, 128)
+                galleryThumbnail = bitmap?.asImageBitmap()
+                loadingThumbnail = false
+            }
+        }
+    }
+    
+    // Load latest photo on screen start
+    LaunchedEffect(Unit) {
+        scope.launch {
+            val latestUri = ImageLoader.getLatestPhoto(context)
+            if (latestUri != null) {
+                loadingThumbnail = true
+                val bitmap = ImageLoader.loadThumbnail(context, latestUri, 128)
+                galleryThumbnail = bitmap?.asImageBitmap()
+                loadingThumbnail = false
+            }
+        }
+    }
     
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
@@ -66,6 +104,8 @@ fun CameraScreen(
     LaunchedEffect(captureResult) {
         when (captureResult) {
             is CaptureResult.Success -> {
+                // Success haptic feedback
+                HapticFeedback.success(context)
                 Toast.makeText(
                     context,
                     "Photo saved!",
@@ -74,6 +114,8 @@ fun CameraScreen(
                 viewModel.clearCaptureResult()
             }
             is CaptureResult.Error -> {
+                // Error haptic feedback
+                HapticFeedback.error(context)
                 Toast.makeText(
                     context,
                     "Failed to capture: ${(captureResult as CaptureResult.Error).message}",
@@ -98,6 +140,9 @@ fun CameraScreen(
                     lifecycleOwner = lifecycleOwner,
                     modifier = Modifier.fillMaxSize()
                 )
+                
+                // Capture flash animation
+                CaptureFlashAnimation(trigger = captureFlashTrigger)
 
                 // UI Overlays
                 CameraOverlay(
@@ -106,11 +151,19 @@ fun CameraScreen(
                     cameraCapabilities = cameraCapabilities,
                     currentFilter = currentFilter,
                     showFilterPanel = showFilterPanel,
-                    onCaptureClick = { viewModel.capturePhoto() },
-                    onModeToggle = { viewModel.toggleCameraMode() },
+                    galleryThumbnail = galleryThumbnail,
+                    loadingThumbnail = loadingThumbnail,
+                    onCaptureClick = { 
+                        HapticFeedback.heavyImpact(context)
+                        viewModel.capturePhoto() 
+                    },
+                    onModeToggle = { 
+                        viewModel.toggleCameraMode() 
+                    },
                     onManualSettingsChange = { viewModel.updateManualSettings(it) },
                     onFilterToggle = { showFilterPanel = !showFilterPanel },
                     onFilterChange = { viewModel.updateFilter(it) },
+                    onGalleryClick = { /* TODO: Open gallery */ },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -159,11 +212,14 @@ private fun CameraOverlay(
     cameraCapabilities: CameraCapabilities?,
     currentFilter: FilterConfig,
     showFilterPanel: Boolean,
+    galleryThumbnail: androidx.compose.ui.graphics.ImageBitmap?,
+    loadingThumbnail: Boolean,
     onCaptureClick: () -> Unit,
     onModeToggle: () -> Unit,
     onManualSettingsChange: (ManualSettings) -> Unit,
     onFilterToggle: () -> Unit,
     onFilterChange: (FilterConfig) -> Unit,
+    onGalleryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showProControls by remember { mutableStateOf(false) }
@@ -179,6 +235,7 @@ private fun CameraOverlay(
             cameraMode = cameraMode,
             onModeToggle = onModeToggle,
             onProControlsToggle = { showProControls = !showProControls },
+            onFilterToggle = onFilterToggle,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -187,8 +244,10 @@ private fun CameraOverlay(
 
         // Bottom controls
         BottomControls(
+            galleryThumbnail = galleryThumbnail,
+            loadingThumbnail = loadingThumbnail,
             onCaptureClick = onCaptureClick,
-            onFilterToggle = onFilterToggle,
+            onGalleryClick = onGalleryClick,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
@@ -227,8 +286,11 @@ private fun TopBar(
     cameraMode: CameraMode,
     onModeToggle: () -> Unit,
     onProControlsToggle: () -> Unit,
+    onFilterToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
+    
     Box(
         modifier = modifier
             .padding(16.dp)
@@ -240,7 +302,10 @@ private fun TopBar(
         ) {
             // Mode indicator with toggle
             GlassButton(
-                onClick = onModeToggle,
+                onClick = { 
+                    HapticFeedback.mediumImpact(view)
+                    onModeToggle() 
+                },
                 modifier = Modifier.height(40.dp),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -264,18 +329,42 @@ private fun TopBar(
                 }
             }
 
-            // Pro controls toggle (only visible in Pro mode)
-            if (cameraMode == CameraMode.PRO) {
+            // Filter and controls buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Filter button
                 GlassButton(
-                    onClick = onProControlsToggle,
+                    onClick = { 
+                        HapticFeedback.lightTap(view)
+                        onFilterToggle() 
+                    },
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Tune,
-                        contentDescription = "Controls",
+                        contentDescription = "Filters",
                         tint = GlassWhite,
                         modifier = Modifier.size(20.dp)
                     )
+                }
+                
+                // Pro controls toggle (only visible in Pro mode)
+                if (cameraMode == CameraMode.PRO) {
+                    GlassButton(
+                        onClick = { 
+                            HapticFeedback.lightTap(view)
+                            onProControlsToggle() 
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Controls",
+                            tint = GlassWhite,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -284,8 +373,10 @@ private fun TopBar(
 
 @Composable
 private fun BottomControls(
+    galleryThumbnail: androidx.compose.ui.graphics.ImageBitmap?,
+    loadingThumbnail: Boolean,
     onCaptureClick: () -> Unit,
-    onFilterToggle: () -> Unit,
+    onGalleryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -299,18 +390,13 @@ private fun BottomControls(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gallery button
-            GlassButton(
-                onClick = onFilterToggle,
-                modifier = Modifier.size(56.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Tune,
-                    contentDescription = "Filters",
-                    tint = GlassWhite,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+            // Gallery thumbnail
+            GalleryThumbnail(
+                thumbnail = galleryThumbnail,
+                isLoading = loadingThumbnail,
+                onClick = onGalleryClick,
+                modifier = Modifier
+            )
 
             // Shutter button
             ShutterButton(
