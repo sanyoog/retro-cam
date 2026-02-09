@@ -1,0 +1,39 @@
+# Android Gradle wrapper (keep wrapper files for reproducible builds)
+# Note: gradle-wrapper.jar is intentionally tracked
+
+# Build outputs
+/build/
+/app/build/
+/*/build/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Local configuration
+local.properties
+.gradle/
+.idea/
+*.iml
+.DS_Store
+
+# Captures
+captures/
+*.log
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build
+.externalNativeBuild
+.cxx/
+
+# Version control
+.svn/
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Profiler
+*.hprof
