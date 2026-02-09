@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.FlipCameraAndroid
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,12 +26,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
+import com.google.accompanist.permissions.rCapabilities
 import com.retrocam.app.domain.model.CameraMode
 import com.retrocam.app.domain.model.CaptureResult
+import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.presentation.camera.CameraViewModel
 import com.retrocam.app.ui.components.CameraPreview
+import com.retrocam.app.ui.components.GlassButton
+import com.retrocam.app.ui.components.GlassPanel
+import com.retrocam.app.ui.components.ProControlraPreview
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
 import com.retrocam.app.ui.components.ShutterButton
@@ -47,6 +52,8 @@ fun CameraScreen(
     
     val cameraState by viewModel.cameraState.collectAsStateWithLifecycle()
     val captureResult by viewModel.captureResult.collectAsStateWithLifecycle()
+    val manualSettings by viewModel.manualSettings.collectAsStateWithLifecycle()
+    val cameraCapabilities by viewModel.cameraCapabilities.collectAsStateWithLifecycle()
     
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
@@ -91,8 +98,11 @@ fun CameraScreen(
                 // UI Overlays
                 CameraOverlay(
                     cameraMode = cameraState.mode,
+                    manualSettings = manualSettings,
+                    cameraCapabilities = cameraCapabilities,
                     onCaptureClick = { viewModel.capturePhoto() },
                     onModeToggle = { viewModel.toggleCameraMode() },
+                    onManualSettingsChange = { viewModel.updateManualSettings(it) },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -137,15 +147,26 @@ fun CameraScreen(
 @Composable
 private fun CameraOverlay(
     cameraMode: CameraMode,
+    manualSettings: ManualSettings,
+    cameraCapabilities: CameraCapabilities?,
     onCaptureClick: () -> Unit,
     onModeToggle: () -> Unit,
+    onManualSettingsChange: (ManualSettings) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showProControls by remember { mutableStateOf(false) }
+    
+    // Show controls panel when in Pro mode
+    LaunchedEffect(cameraMode) {
+        showProControls = cameraMode == CameraMode.PRO
+    }
+
     Box(modifier = modifier) {
         // Top bar
         TopBar(
             cameraMode = cameraMode,
             onModeToggle = onModeToggle,
+            onProControlsToggle = { showProControls = !showProControls },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -156,17 +177,7 @@ private fun CameraOverlay(
         BottomControls(
             onCaptureClick = onCaptureClick,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .navigationBarsPadding()
-        )
-    }
-}
-
-@Composable
-private fun TopBar(
-    cameraMode: CameraMode,
-    onModeToggle: () -> Unit,
+    onProControlsToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -176,6 +187,47 @@ private fun TopBar(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Mode indicator with toggle
+            GlassButton(
+                onClick = onModeToggle,
+                modifier = Modifier.height(40.dp),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (cameraMode == CameraMode.PRO) 
+                            Icons.Default.Settings else Icons.Default.AutoMode,
+                        contentDescription = null,
+                        tint = GlassWhite,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = if (cameraMode == CameraMode.NORMAL) "AUTO" else "PRO",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = GlassWhite
+                    )
+                }
+            }
+
+            // Pro controls toggle (only visible in Pro mode)
+            if (cameraMode == CameraMode.PRO) {
+                GlassButton(
+                    onClick = onProControlsToggle,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = "Controls",
+                        tint = GlassWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }ontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Mode indicator

@@ -77,13 +77,15 @@ adb logcat | grep RetroCam
 - [x] Camera preview + capture
 - [x] Glassy Material 3 UI
 
-### Phase 2: Camera Modes (Next)
-- [ ] Normal mode (auto everything)
-- [ ] Pro mode (manual controls)
-- [ ] ISO, shutter speed, WB, focus controls
-- [ ] Camera2 interop for manual settings
+### Phase 2: Camera Modes ✅
+- [x] Normal mode (auto everything)
+- [x] Pro mode (manual controls)
+- [x] ISO, shutter speed, WB, focus controls
+- [x] Camera2 interop for manual settings
+- [x] Slide-up controls panel
+- [x] Real-time manual adjustments
 
-### Phase 3: Filters & Presets
+### Phase 3: Filters & Presets (Next)
 - [ ] Filter engine (GPU-based)
 - [ ] Live preview pipeline
 - [ ] Preset system (save/load/edit)

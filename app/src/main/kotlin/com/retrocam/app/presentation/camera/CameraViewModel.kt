@@ -1,11 +1,14 @@
 package com.retrocam.app.presentation.camera
 
 import android.util.Log
+import androidx.camera.core.Camera
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.retrocam.app.domain.camera.ManualCameraController
+import com.retrocam.app.domain.model.CameraCapabilities
 import com.retrocam.app.domain.model.CameraMode
 import com.retrocam.app.domain.model.CameraState
 import com.retrocam.app.domain.model.CaptureResult
@@ -23,7 +26,8 @@ private const val TAG = "CameraViewModel"
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val cameraRepository: CameraRepository
+    private val cameraRepository: CameraRepository,
+    private val manualCameraController: ManualCameraController
 ) : ViewModel() {
 
     private val _cameraState = MutableStateFlow(CameraState())
@@ -35,9 +39,13 @@ class CameraViewModel @Inject constructor(
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageCapture: ImageCapture? = null
     private var preview: Preview? = null
+    private var camera: Camera? = null
 
     private val _manualSettings = MutableStateFlow(ManualSettings())
     val manualSettings: StateFlow<ManualSettings> = _manualSettings.asStateFlow()
+
+    val cameraCapabilities: StateFlow<CameraCapabilities?> = 
+        manualCameraController.capabilities
 
     init {
         initializeCamera()
@@ -62,6 +70,14 @@ class CameraViewModel @Inject constructor(
     }
 
     fun getPreview(): Preview? = preview
+
+    fun getCamera(): Camera? = camera
+
+    fun setCamera(cam: Camera) {
+        camera = cam
+        // Initialize manual controls with camera
+        manualCameraController.initialize(cam.cameraControl, cam.cameraInfo)
+    }
 
     fun getCameraProvider(): ProcessCameraProvider? = cameraProvider
 
@@ -93,17 +109,49 @@ class CameraViewModel @Inject constructor(
                         Log.e(TAG, "Photo capture failed: ${result.message}")
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception during capture", e)
-                _captureResult.value = CaptureResult.Error(e.message ?: "Unknown error")
-            }
+        val newMode = if (_cameraState.value.mode == CameraMode.NORMAL) {
+            CameraMode.PRO
+        } else {
+            CameraMode.NORMAL
+        }
+        
+        _cameraState.update { it.copy(mode = newMode) }
+        
+        // Reset to auto when switching to normal mode
+        if (newMode == CameraMode.NORMAL) {
+            manualCameraController.resetToAuto()
+            _manualSettings.value = ManualSettings()
+        }
+        
+        Log.d(TAG, "Camera mode: $newMode")
+    }
+
+    fun updateManualSettings(settings: ManualSettings) {
+        if (_cameraState.value.mode == CameraMode.PRO) {
+            _manualSettings.value = settings
+            manualCameraController.applyManualSettings(settings)
+            Log.d(TAG, "Applied manual settings: $settings")
         }
     }
 
-    fun toggleCameraMode() {
-        _cameraState.update {
-            it.copy(
-                mode = if (it.mode == CameraMode.NORMAL) CameraMode.PRO else CameraMode.NORMAL
+    fun updateIso(iso: Int) {
+        updateManualSettings(_manualSettings.value.copy(iso = iso))
+    }
+
+    fun updateShutterSpeed(speed: Long) {
+        updateManualSettings(_manualSettings.value.copy(shutterSpeed = speed))
+    }
+
+    fun updateWhiteBalance(kelvin: Int) {
+        updateManualSettings(_manualSettings.value.copy(whiteBalance = kelvin))
+    }
+
+    fun updateFocusDistance(distance: Float) {
+        updateManualSettings(_manualSettings.value.copy(focusDistance = distance))
+    }
+
+    fun updateExposureCompensation(ev: Int) {
+        updateManualSettings(_manualSettings.value.copy(exposureCompensation = ev)AL) CameraMode.PRO else CameraMode.NORMAL
             )
         }
         Log.d(TAG, "Camera mode: ${_cameraState.value.mode}")

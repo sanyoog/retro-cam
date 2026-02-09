@@ -42,11 +42,14 @@ fun CameraPreview(
                 preview.setSurfaceProvider(previewView.surfaceProvider)
 
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                val camera = cameraProvider.bindToLifecycle(
                     lifecycleOwner,
                     cameraSelector,
                     preview
                 )
+                
+                // Set camera reference in ViewModel for manual controls
+                viewModel.setCamera(camera)
             } catch (e: Exception) {
                 // Handle binding errors
                 e.printStackTrace()
