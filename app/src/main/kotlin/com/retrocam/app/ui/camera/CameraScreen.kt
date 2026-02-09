@@ -137,7 +137,7 @@ fun CameraScreen(
             // Permission not granted
             PermissionRequestScreen(
                 onRequestPermission = { cameraPermissionState.launchPermissionRequest() },
-                shouldShowRationale = cameraPermissionState.status.shouldShowRationale
+                shouldShowRationale = false
             )
         }
     }
@@ -183,10 +183,10 @@ private fun CameraOverlay(
         // Pro controls panel (slide up from bottom)
         if (showProControls && cameraCapabilities != null) {
             ProControlsPanel(
-                manualSettings = manualSettings,
-                cameraCapabilities = cameraCapabilities,
+                visible = showProControls,
+                capabilities = cameraCapabilities,
+                currentSettings = manualSettings,
                 onSettingsChange = onManualSettingsChange,
-                onClose = { showProControls = false },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()

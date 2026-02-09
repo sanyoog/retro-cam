@@ -74,7 +74,7 @@ fun ProControlsPanel(
             capabilities?.isoRange?.let { range ->
                 ManualControlSlider(
                     label = "ISO",
-                    value = currentSettings.iso ?: range.first,
+                    value = (currentSettings.iso ?: range.first).toFloat(),
                     valueRange = range.first.toFloat()..range.last.toFloat(),
                     onValueChange = { onSettingsChange(currentSettings.copy(iso = it.roundToInt())) },
                     valueFormatter = { it.roundToInt().toString() },

@@ -145,7 +145,7 @@ class ManualCameraController @Inject constructor() {
                 )
             }
             
-            control.applyCaptureRequestOptions(builder.build())
+            control.setCaptureRequestOptions(builder.build())
         }
     }
 
@@ -167,7 +167,7 @@ class ManualCameraController @Inject constructor() {
                 CaptureRequest.CONTROL_AF_MODE,
                 CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
             )
-            control.applyCaptureRequestOptions(builder.build())
+            control.setCaptureRequestOptions(builder.build())
         }
     }
 }
