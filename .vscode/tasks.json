@@ -1,0 +1,123 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Debug APK",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["assembleDebug", "--no-daemon"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Debug on Device",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["installDebug", "--no-daemon"],
+      "dependsOn": ["Build Debug APK"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean Build",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["clean", "assembleDebug", "--no-daemon"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Unit Tests",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["test", "--no-daemon"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Release APK",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["assembleRelease", "--no-daemon"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Launch App on Device",
+      "type": "shell",
+      "command": "adb",
+      "args": ["shell", "am", "start", "-n", "com.retrocam/.MainActivity"],
+      "dependsOn": ["Install Debug on Device"],
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "View Logs (Filtered)",
+      "type": "shell",
+      "command": "adb",
+      "args": ["logcat", "-v", "color", "*:S", "RetroCam:V", "AndroidRuntime:E"],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clear Logs",
+      "type": "shell",
+      "command": "adb",
+      "args": ["logcat", "-c"],
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Uninstall App",
+      "type": "shell",
+      "command": "adb",
+      "args": ["uninstall", "com.retrocam"],
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "List Connected Devices",
+      "type": "shell",
+      "command": "adb",
+      "args": ["devices", "-l"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
