@@ -64,7 +64,8 @@ fun AnimatedShutterButton(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        // Ripple effect\n        AnimatedVisibility(
+        // Ripple effect
+        AnimatedVisibility(
             visible = showRipple,
             enter = fadeIn(tween(100)) + scaleIn(
                 initialScale = 0.8f,
