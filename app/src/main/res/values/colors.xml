@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Glass Theme Colors -->
+    <color name="glass_primary">#1AFFFFFF</color>
+    <color name="glass_secondary">#26FFFFFF</color>
+    <color name="glass_tertiary">#0DFFFFFF</color>
+    
+    <!-- Background Colors -->
+    <color name="background_dark">#FF0A0A0A</color>
+    <color name="background_darker">#FF050505</color>
+    
+    <!-- Accent Colors -->
+    <color name="accent_blue">#FF4A9EFF</color>
+    <color name="accent_purple">#FF9D4AFF</color>
+    <color name="accent_gold">#FFFFC44A</color>
+    
+    <!-- UI Element Colors -->
+    <color name="surface">#14FFFFFF</color>
+    <color name="surface_variant">#1AFFFFFF</color>
+    <color name="on_surface">#FFFFFFFF</color>
+    <color name="on_surface_variant">#B3FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="error">#FFFF4444</color>
+    <color name="success">#FF44FF88</color>
+    
+    <!-- Launcher icon -->
+    <color name="ic_launcher_background">#0A0A0A</color>
+</resources>
