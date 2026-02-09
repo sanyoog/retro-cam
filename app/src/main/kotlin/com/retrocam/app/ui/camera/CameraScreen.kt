@@ -30,9 +30,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.retrocam.app.domain.model.CameraCapabilities
 import com.retrocam.app.domain.model.CameraMode
 import com.retrocam.app.domain.model.CaptureResult
+import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.presentation.camera.CameraViewModel
 import com.retrocam.app.ui.components.CameraPreview
+import com.retrocam.app.ui.components.FilterPanel
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
 import com.retrocam.app.ui.components.ProControlsPanel
@@ -53,6 +55,9 @@ fun CameraScreen(
     val captureResult by viewModel.captureResult.collectAsStateWithLifecycle()
     val manualSettings by viewModel.manualSettings.collectAsStateWithLifecycle()
     val cameraCapabilities by viewModel.cameraCapabilities.collectAsStateWithLifecycle()
+    val currentFilter by viewModel.currentFilter.collectAsStateWithLifecycle()
+    
+    var showFilterPanel by remember { mutableStateOf(false) }
     
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
@@ -99,9 +104,13 @@ fun CameraScreen(
                     cameraMode = cameraState.mode,
                     manualSettings = manualSettings,
                     cameraCapabilities = cameraCapabilities,
+                    currentFilter = currentFilter,
+                    showFilterPanel = showFilterPanel,
                     onCaptureClick = { viewModel.capturePhoto() },
                     onModeToggle = { viewModel.toggleCameraMode() },
                     onManualSettingsChange = { viewModel.updateManualSettings(it) },
+                    onFilterToggle = { showFilterPanel = !showFilterPanel },
+                    onFilterChange = { viewModel.updateFilter(it) },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -148,9 +157,13 @@ private fun CameraOverlay(
     cameraMode: CameraMode,
     manualSettings: ManualSettings,
     cameraCapabilities: CameraCapabilities?,
+    currentFilter: FilterConfig,
+    showFilterPanel: Boolean,
     onCaptureClick: () -> Unit,
     onModeToggle: () -> Unit,
     onManualSettingsChange: (ManualSettings) -> Unit,
+    onFilterToggle: () -> Unit,
+    onFilterChange: (FilterConfig) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showProControls by remember { mutableStateOf(false) }
@@ -175,10 +188,23 @@ private fun CameraOverlay(
         // Bottom controls
         BottomControls(
             onCaptureClick = onCaptureClick,
+            onFilterToggle = onFilterToggle,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
         )
+
+        // Filter panel (slide up from bottom)
+        if (showFilterPanel) {
+            FilterPanel(
+                currentFilter = currentFilter,
+                onFilterChange = onFilterChange,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        }
 
         // Pro controls panel (slide up from bottom)
         if (showProControls && cameraCapabilities != null) {
@@ -259,6 +285,7 @@ private fun TopBar(
 @Composable
 private fun BottomControls(
     onCaptureClick: () -> Unit,
+    onFilterToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -274,12 +301,12 @@ private fun BottomControls(
         ) {
             // Gallery button
             GlassButton(
-                onClick = { /* TODO: Open gallery */ },
+                onClick = onFilterToggle,
                 modifier = Modifier.size(56.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.PhotoLibrary,
-                    contentDescription = "Gallery",
+                    imageVector = Icons.Default.Tune,
+                    contentDescription = "Filters",
                     tint = GlassWhite,
                     modifier = Modifier.size(28.dp)
                 )

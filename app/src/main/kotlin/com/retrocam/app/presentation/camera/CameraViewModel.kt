@@ -12,6 +12,7 @@ import com.retrocam.app.domain.model.CameraCapabilities
 import com.retrocam.app.domain.model.CameraMode
 import com.retrocam.app.domain.model.CameraState
 import com.retrocam.app.domain.model.CaptureResult
+import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.ManualSettings
 import com.retrocam.app.domain.repository.CameraRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +47,10 @@ class CameraViewModel @Inject constructor(
 
     val cameraCapabilities: StateFlow<CameraCapabilities?> = 
         manualCameraController.capabilities
+    
+    // Filter state
+    private val _currentFilter = MutableStateFlow(FilterConfig())
+    val currentFilter: StateFlow<FilterConfig> = _currentFilter.asStateFlow()
 
     init {
         initializeCamera()
@@ -160,6 +165,12 @@ class CameraViewModel @Inject constructor(
 
     fun updateExposureCompensation(ev: Int) {
         updateManualSettings(_manualSettings.value.copy(exposureCompensation = ev))
+    }
+    
+    // Filter methods
+    fun updateFilter(config: FilterConfig) {
+        _currentFilter.value = config
+        Log.d(TAG, "Filter updated: ${config.type} at ${config.intensity * 100}%")
     }
 
     fun clearCaptureResult() {
