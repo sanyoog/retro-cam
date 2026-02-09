@@ -26,7 +26,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rCapabilities
+import com.google.accompanist.permissions.rememberPermissionState
+import com.retrocam.app.domain.model.CameraCapabilities
 import com.retrocam.app.domain.model.CameraMode
 import com.retrocam.app.domain.model.CaptureResult
 import com.retrocam.app.domain.model.ManualSettings
@@ -34,9 +35,7 @@ import com.retrocam.app.presentation.camera.CameraViewModel
 import com.retrocam.app.ui.components.CameraPreview
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
-import com.retrocam.app.ui.components.ProControlraPreview
-import com.retrocam.app.ui.components.GlassButton
-import com.retrocam.app.ui.components.GlassPanel
+import com.retrocam.app.ui.components.ProControlsPanel
 import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
 import com.retrocam.app.ui.theme.GlassWhite

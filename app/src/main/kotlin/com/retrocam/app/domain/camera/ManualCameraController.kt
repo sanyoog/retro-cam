@@ -93,60 +93,59 @@ class ManualCameraController @Inject constructor() {
      */
     fun applyManualSettings(settings: ManualSettings) {
         camera2Control?.let { control ->
-            control.captureRequestOptions = Camera2CameraControl
-                .CaptureRequestOptions.Builder()
-                .apply {
-                    // Manual ISO
-                    settings.iso?.let { iso ->
-                        setCaptureRequestOption(
-                            CaptureRequest.CONTROL_AE_MODE,
-                            CaptureRequest.CONTROL_AE_MODE_OFF
-                        )
-                        setCaptureRequestOption(
-                            CaptureRequest.SENSOR_SENSITIVITY,
-                            iso
-                        )
-                    }
-                    
-                    // Manual shutter speed
-                    settings.shutterSpeed?.let { exposureTime ->
-                        setCaptureRequestOption(
-                            CaptureRequest.SENSOR_EXPOSURE_TIME,
-                            exposureTime
-                        )
-                    }
-                    
-                    // Manual white balance
-                    settings.whiteBalance?.let { kelvin ->
-                        setCaptureRequestOption(
-                            CaptureRequest.CONTROL_AWB_MODE,
-                            CaptureRequest.CONTROL_AWB_MODE_OFF
-                        )
-                        // Note: Camera2 doesn't directly support color temperature
-                        // We would need to convert Kelvin to RG gains
-                    }
-                    
-                    // Manual focus
-                    settings.focusDistance?.let { distance ->
-                        setCaptureRequestOption(
-                            CaptureRequest.CONTROL_AF_MODE,
-                            CaptureRequest.CONTROL_AF_MODE_OFF
-                        )
-                        setCaptureRequestOption(
-                            CaptureRequest.LENS_FOCUS_DISTANCE,
-                            distance
-                        )
-                    }
-                    
-                    // Exposure compensation (works with auto mode)
-                    settings.exposureCompensation?.let { compensation ->
-                        setCaptureRequestOption(
-                            CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
-                            compensation
-                        )
-                    }
-                }
-                .build()
+            val builder = Camera2CameraControl.CaptureRequestOptions.Builder()
+            
+            // Manual ISO
+            settings.iso?.let { iso ->
+                builder.setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_OFF
+                )
+                builder.setCaptureRequestOption(
+                    CaptureRequest.SENSOR_SENSITIVITY,
+                    iso
+                )
+            }
+            
+            // Manual shutter speed
+            settings.shutterSpeed?.let { exposureTime ->
+                builder.setCaptureRequestOption(
+                    CaptureRequest.SENSOR_EXPOSURE_TIME,
+                    exposureTime
+                )
+            }
+            
+            // Manual white balance
+            settings.whiteBalance?.let { kelvin ->
+                builder.setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AWB_MODE,
+                    CaptureRequest.CONTROL_AWB_MODE_OFF
+                )
+                // Note: Camera2 doesn't directly support color temperature
+                // We would need to convert Kelvin to RG gains
+            }
+            
+            // Manual focus
+            settings.focusDistance?.let { distance ->
+                builder.setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AF_MODE,
+                    CaptureRequest.CONTROL_AF_MODE_OFF
+                )
+                builder.setCaptureRequestOption(
+                    CaptureRequest.LENS_FOCUS_DISTANCE,
+                    distance
+                )
+            }
+            
+            // Exposure compensation (works with auto mode)
+            settings.exposureCompensation?.let { compensation ->
+                builder.setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
+                    compensation
+                )
+            }
+            
+            control.applyCaptureRequestOptions(builder.build())
         }
     }
 
@@ -155,23 +154,20 @@ class ManualCameraController @Inject constructor() {
      */
     fun resetToAuto() {
         camera2Control?.let { control ->
-            control.captureRequestOptions = Camera2CameraControl
-                .CaptureRequestOptions.Builder()
-                .apply {
-                    setCaptureRequestOption(
-                        CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON
-                    )
-                    setCaptureRequestOption(
-                        CaptureRequest.CONTROL_AWB_MODE,
-                        CaptureRequest.CONTROL_AWB_MODE_AUTO
-                    )
-                    setCaptureRequestOption(
-                        CaptureRequest.CONTROL_AF_MODE,
-                        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-                    )
-                }
-                .build()
+            val builder = Camera2CameraControl.CaptureRequestOptions.Builder()
+            builder.setCaptureRequestOption(
+                CaptureRequest.CONTROL_AE_MODE,
+                CaptureRequest.CONTROL_AE_MODE_ON
+            )
+            builder.setCaptureRequestOption(
+                CaptureRequest.CONTROL_AWB_MODE,
+                CaptureRequest.CONTROL_AWB_MODE_AUTO
+            )
+            builder.setCaptureRequestOption(
+                CaptureRequest.CONTROL_AF_MODE,
+                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+            )
+            control.applyCaptureRequestOptions(builder.build())
         }
     }
 }
