@@ -287,6 +287,7 @@ private fun CameraOverlay(
             onProControlsToggle = { showProControls = !showProControls },
             onFilterToggle = onFilterToggle,
             onSettingsClick = onSettingsClick,
+            uiTransparency = uiTransparency,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -400,6 +401,7 @@ private fun TopBar(
     onProControlsToggle: () -> Unit,
     onFilterToggle: () -> Unit,
     onSettingsClick: () -> Unit,
+    uiTransparency: Int,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current

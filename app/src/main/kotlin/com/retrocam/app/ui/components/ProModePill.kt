@@ -328,11 +328,10 @@ private fun LinearSliderControl(
             .fillMaxWidth(0.85f)
             .height(60.dp)
             .clip(RoundedCornerShape(30.dp))
-            .background(Color(0xF2000000)) // 95% black
-            .blur(30.dp)
+            .background(Color.Black.copy(alpha = 0.3f))
             .border(
                 width = 1.5.dp,
-                color = Color(0x59FFFFFF), // 35% white
+                color = Color.White.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(30.dp)
             )
             .padding(horizontal = 20.dp, vertical = 12.dp)
