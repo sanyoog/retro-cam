@@ -86,14 +86,10 @@ fun CameraScreen(
     
     var showFilterPanel by remember { mutableStateOf(false) }
     var showQuickSettings by remember { mutableStateOf(false) }
-    var showQuickSettings by remember { mutableStateOf(false) }
     var galleryThumbnail by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     var loadingThumbnail by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
-    
-    val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
-    val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
     
     val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
     val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
