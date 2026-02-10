@@ -24,14 +24,15 @@ fun GlassPanel(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0x26FFFFFF)) // 15% white
+            .clip(RoundedCornerShape(20.dp)) // More rounded for modern look
+            .background(Color(0x4DFFFFFF)) // 30% white - more visible
+            .blur(30.dp) // Stronger blur for better glass effect
             .border(
-                width = 1.dp,
-                color = Color(0x33FFFFFF), // 20% white border
-                shape = RoundedCornerShape(16.dp)
+                width = 1.5.dp,
+                color = Color(0x66FFFFFF), // 40% white border - more visible
+                shape = RoundedCornerShape(20.dp)
             )
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
         content()
     }

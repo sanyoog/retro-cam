@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -30,10 +31,11 @@ fun GlassButton(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(Color(0x26FFFFFF)) // 15% white
+            .background(Color(0x40FFFFFF)) // 25% white - more visible
+            .blur(20.dp) // Add blur for glass effect
             .border(
-                width = 1.dp,
-                color = Color(0x33FFFFFF), // 20% white border
+                width = 1.5.dp,
+                color = Color(0x59FFFFFF), // 35% white border - more visible
                 shape = shape
             )
             .clickable(

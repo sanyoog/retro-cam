@@ -6,8 +6,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FlipCameraAndroid
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -46,11 +51,11 @@ import com.retrocam.app.presentation.camera.CameraViewModel
 import com.retrocam.app.ui.components.AnimatedShutterButton
 import com.retrocam.app.ui.components.CameraPreview
 import com.retrocam.app.ui.components.CaptureFlashAnimation
-import com.retrocam.app.ui.components.FilterPanel
+import com.retrocam.app.ui.components.FilterPill
 import com.retrocam.app.ui.components.GalleryThumbnail
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
-import com.retrocam.app.ui.components.ProControlsPanel
+import com.retrocam.app.ui.components.ProModePill
 import com.retrocam.app.ui.components.QuickSettingsPill
 import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
@@ -317,28 +322,24 @@ private fun CameraOverlay(
                 .navigationBarsPadding()
         )
 
-        // Filter panel (slide up from bottom)
+        // Filter pill (below top buttons)
         AnimatedVisibility(
             visible = showFilterPanel,
-            enter = slideInVertically(
-                initialOffsetY = { it },
+            enter = fadeIn(spring()) + scaleIn(
+                initialScale = 0.8f,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    dampingRatio = Spring.DampingRatioMediumBouncy
                 )
-            ) + fadeIn(tween(200)),
-            exit = slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(300)
-            ) + fadeOut(tween(200))
+            ),
+            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f)
         ) {
-            FilterPanel(
+            FilterPill(
+                visible = true,
                 currentFilter = currentFilter,
                 onFilterChange = onFilterChange,
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 120.dp) // Below the top bar
             )
         }
 
@@ -362,31 +363,26 @@ private fun CameraOverlay(
             )
         }
 
-        // Pro controls panel (slide up from bottom)
+        // Pro mode pill (above shutter button)
         AnimatedVisibility(
             visible = showProControls && cameraCapabilities != null,
-            enter = slideInVertically(
-                initialOffsetY = { it },
+            enter = fadeIn(spring()) + scaleIn(
+                initialScale = 0.8f,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    dampingRatio = Spring.DampingRatioMediumBouncy
                 )
-            ) + fadeIn(tween(200)),
-            exit = slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(300)
-            ) + fadeOut(tween(200))
+            ),
+            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f)
         ) {
             cameraCapabilities?.let { caps ->
-                ProControlsPanel(
+                ProModePill(
                     visible = true,
                     capabilities = caps,
                     currentSettings = manualSettings,
                     onSettingsChange = onManualSettingsChange,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
+                        .padding(bottom = 140.dp) // Above the shutter button
                 )
             }
         }
@@ -461,7 +457,7 @@ private fun TopBar(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Tune,
+                        imageVector = Icons.Default.AutoAwesome,
                         contentDescription = "Filters",
                         tint = GlassWhite,
                         modifier = Modifier.size(20.dp)
