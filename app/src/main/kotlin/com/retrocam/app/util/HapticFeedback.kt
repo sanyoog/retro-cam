@@ -18,8 +18,7 @@ object HapticFeedback {
      */
     fun lightTap(view: View) {
         view.performHapticFeedback(
-            HapticFeedbackConstants.CLOCK_TICK,
-            HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+            HapticFeedbackConstants.CLOCK_TICK
         )
     }
     
@@ -28,8 +27,7 @@ object HapticFeedback {
      */
     fun mediumImpact(view: View) {
         view.performHapticFeedback(
-            HapticFeedbackConstants.CONTEXT_CLICK,
-            HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+            HapticFeedbackConstants.CONTEXT_CLICK
         )
     }
     
@@ -73,8 +71,9 @@ object HapticFeedback {
             val effect = VibrationEffect.createWaveform(timings, amplitudes, -1)
             vibrator.vibrate(effect)
         } else {
-            @Suppress("DEPRECATION")
+            // For older devices
             val pattern = longArrayOf(0, 30, 50, 30)
+            @Suppress("DEPRECATION")
             vibrator.vibrate(pattern, -1)
         }
     }
