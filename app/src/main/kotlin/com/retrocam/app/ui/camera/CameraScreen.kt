@@ -204,6 +204,7 @@ fun CameraScreen(
                     onAspectRatioChange = { viewModel.setAspectRatio(it) },
                     onFullSettingsClick = { onNavigateToSettings() },
                     onFlipCamera = { viewModel.flipCamera() },
+                    uiTransparency = uiTransparency,
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -269,6 +270,7 @@ private fun CameraOverlay(
     onAspectRatioChange: (Int) -> Unit,
     onFullSettingsClick: () -> Unit,
     onFlipCamera: () -> Unit,
+    uiTransparency: Int,
     modifier: Modifier = Modifier
 ) {
     var showProControls by remember { mutableStateOf(false) }
