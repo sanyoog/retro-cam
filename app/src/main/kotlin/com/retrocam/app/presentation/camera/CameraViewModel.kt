@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -144,6 +145,8 @@ class CameraViewModel @Inject constructor(
     fun getCameraProvider(): ProcessCameraProvider? = cameraProvider
 
     fun getCameraSelector() = cameraRepository.getCameraSelector()
+    
+    fun getCameraSelector(lensFacing: Int) = cameraRepository.getCameraSelector(lensFacing)
 
     fun capturePhoto() {
         val capture = imageCapture ?: run {
@@ -278,6 +281,18 @@ class CameraViewModel @Inject constructor(
         viewModelScope.launch {
             appPreferences.setAspectRatio(ratio)
         }
+    }
+    
+    fun flipCamera() {
+        val currentLensFacing = _cameraState.value.lensFacing
+        val newLensFacing = if (currentLensFacing == CameraSelector.LENS_FACING_BACK) {
+            CameraSelector.LENS_FACING_FRONT
+        } else {
+            CameraSelector.LENS_FACING_BACK
+        }
+        
+        _cameraState.update { it.copy(lensFacing = newLensFacing) }
+        Log.d(TAG, "Camera flipped to: ${if (newLensFacing == CameraSelector.LENS_FACING_FRONT) "FRONT" else "BACK"}")
     }
 
     fun clearCaptureResult() {

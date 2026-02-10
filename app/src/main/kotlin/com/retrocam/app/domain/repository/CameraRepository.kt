@@ -36,6 +36,11 @@ interface CameraRepository {
     fun getCameraSelector(): CameraSelector
     
     /**
+     * Get camera selector for specific lens facing
+     */
+    fun getCameraSelector(lensFacing: Int): CameraSelector
+    
+    /**
      * Capture a photo and save it to storage
      */
     suspend fun capturePhoto(

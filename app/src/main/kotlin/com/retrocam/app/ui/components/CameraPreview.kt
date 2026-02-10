@@ -6,11 +6,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.retrocam.app.presentation.camera.CameraViewModel
 
 @Composable
@@ -20,6 +22,7 @@ fun CameraPreview(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val cameraState by viewModel.cameraState.collectAsStateWithLifecycle()
     
     val previewView = remember {
         PreviewView(context).apply {
@@ -28,11 +31,11 @@ fun CameraPreview(
         }
     }
 
-    DisposableEffect(key1 = lifecycleOwner) {
+    DisposableEffect(key1 = lifecycleOwner, key2 = cameraState.lensFacing) {
         val cameraProvider = viewModel.getCameraProvider()
         val preview = viewModel.getPreview()
         val imageCapture = viewModel.getImageCapture()
-        val cameraSelector = viewModel.getCameraSelector()
+        val cameraSelector = viewModel.getCameraSelector(cameraState.lensFacing)
 
         if (cameraProvider != null && preview != null && imageCapture != null) {
             try {

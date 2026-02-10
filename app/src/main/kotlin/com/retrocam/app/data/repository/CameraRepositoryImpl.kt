@@ -53,6 +53,12 @@ class CameraRepositoryImpl(
     override fun getCameraSelector(): CameraSelector {
         return CameraSelector.DEFAULT_BACK_CAMERA
     }
+    
+    override fun getCameraSelector(lensFacing: Int): CameraSelector {
+        return CameraSelector.Builder()
+            .requireLensFacing(lensFacing)
+            .build()
+    }
 
     override suspend fun capturePhoto(
         imageCapture: ImageCapture,

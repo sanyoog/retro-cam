@@ -56,6 +56,7 @@ import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
 import com.retrocam.app.ui.theme.GlassWhite
 import com.retrocam.app.ui.theme.GlassSurfaceDark
+import com.retrocam.app.util.GalleryOpener
 import com.retrocam.app.util.HapticFeedback
 import com.retrocam.app.util.ImageLoader
 import kotlinx.coroutines.launch
@@ -63,6 +64,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraScreen(
+    onNavigateToSettings: () -> Unit = {},
     viewModel: CameraViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -192,11 +194,14 @@ fun CameraScreen(
                     onManualSettingsChange = { viewModel.updateManualSettings(it) },
                     onFilterToggle = { showFilterPanel = !showFilterPanel },
                     onFilterChange = { viewModel.updateFilter(it) },
-                    onGalleryClick = { /* TODO: Open gallery */ },
+                    onGalleryClick = { 
+                        GalleryOpener.openGallery(context)
+                    },
                     onSettingsClick = { showQuickSettings = !showQuickSettings },
                     onPhotoQualityChange = { viewModel.setPhotoQuality(it) },
                     onAspectRatioChange = { viewModel.setAspectRatio(it) },
-                    onFullSettingsClick = { /* TODO: Navigate to settings */ },
+                    onFullSettingsClick = { onNavigateToSettings() },
+                    onFlipCamera = { viewModel.flipCamera() },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -261,6 +266,7 @@ private fun CameraOverlay(
     onPhotoQualityChange: (Int) -> Unit,
     onAspectRatioChange: (Int) -> Unit,
     onFullSettingsClick: () -> Unit,
+    onFlipCamera: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showProControls by remember { mutableStateOf(false) }
@@ -539,7 +545,7 @@ private fun BottomControls(
 
             // Flip camera button
             GlassButton(
-                onClick = { /* TODO: Flip camera */ },
+                onClick = onFlipCamera,
                 modifier = Modifier.size(56.dp)
             ) {
                 Icon(
