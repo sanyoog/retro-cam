@@ -6,6 +6,7 @@ import com.retrocam.app.domain.filter.FilterProcessor
 import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.FilterPreset
 import com.retrocam.app.domain.repository.FilterRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -16,7 +17,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class FilterRepositoryImpl @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val filterProcessor: FilterProcessor
 ) : FilterRepository {
     
