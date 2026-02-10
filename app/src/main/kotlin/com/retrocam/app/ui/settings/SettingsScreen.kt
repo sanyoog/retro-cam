@@ -194,9 +194,33 @@ fun SettingsScreen(
                     SettingsActionItem(
                         icon = Icons.Default.Info,
                         title = "About RetroCam",
-                        description = "Version 1.2.0 • Phase 4",
+                        description = "Version 1.4.0 • Phase 5",
                         onClick = onAboutClick
                     )
+                }
+                
+                // Developer Section
+                SettingsSection(title = "Developer") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "Made with ❤️ by",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GlassWhite.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = "Sanyog",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = GlassWhite
+                        )
+                    }
                 }
             }
         }

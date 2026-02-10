@@ -51,6 +51,7 @@ import com.retrocam.app.ui.components.GalleryThumbnail
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
 import com.retrocam.app.ui.components.ProControlsPanel
+import com.retrocam.app.ui.components.QuickSettingsPill
 import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
 import com.retrocam.app.ui.theme.GlassWhite
@@ -77,10 +78,18 @@ fun CameraScreen(
     val hapticsEnabled by viewModel.hapticsEnabled.collectAsStateWithLifecycle()
     
     var showFilterPanel by remember { mutableStateOf(false) }
+    var showQuickSettings by remember { mutableStateOf(false) }
+    var showQuickSettings by remember { mutableStateOf(false) }
     var galleryThumbnail by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     var loadingThumbnail by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
+    
+    val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
+    val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
+    
+    val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
+    val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
     
     // Load thumbnail when last photo changes
     LaunchedEffect(lastPhotoUri) {
@@ -165,6 +174,9 @@ fun CameraScreen(
                     cameraCapabilities = cameraCapabilities,
                     currentFilter = currentFilter,
                     showFilterPanel = showFilterPanel,
+                    showQuickSettings = showQuickSettings,
+                    photoQuality = photoQuality,
+                    aspectRatio = aspectRatio,
                     galleryThumbnail = galleryThumbnail,
                     loadingThumbnail = loadingThumbnail,
                     hapticsEnabled = hapticsEnabled,
@@ -181,6 +193,10 @@ fun CameraScreen(
                     onFilterToggle = { showFilterPanel = !showFilterPanel },
                     onFilterChange = { viewModel.updateFilter(it) },
                     onGalleryClick = { /* TODO: Open gallery */ },
+                    onSettingsClick = { showQuickSettings = !showQuickSettings },
+                    onPhotoQualityChange = { viewModel.setPhotoQuality(it) },
+                    onAspectRatioChange = { viewModel.setAspectRatio(it) },
+                    onFullSettingsClick = { /* TODO: Navigate to settings */ },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -229,6 +245,9 @@ private fun CameraOverlay(
     cameraCapabilities: CameraCapabilities?,
     currentFilter: FilterConfig,
     showFilterPanel: Boolean,
+    showQuickSettings: Boolean,
+    photoQuality: Int,
+    aspectRatio: Int,
     galleryThumbnail: androidx.compose.ui.graphics.ImageBitmap?,
     loadingThumbnail: Boolean,
     hapticsEnabled: Boolean,
@@ -238,6 +257,10 @@ private fun CameraOverlay(
     onFilterToggle: () -> Unit,
     onFilterChange: (FilterConfig) -> Unit,
     onGalleryClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onPhotoQualityChange: (Int) -> Unit,
+    onAspectRatioChange: (Int) -> Unit,
+    onFullSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showProControls by remember { mutableStateOf(false) }
@@ -255,10 +278,26 @@ private fun CameraOverlay(
             onModeToggle = onModeToggle,
             onProControlsToggle = { showProControls = !showProControls },
             onFilterToggle = onFilterToggle,
+            onSettingsClick = onSettingsClick,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .statusBarsPadding()
+        )
+
+        // Quick Settings Pill (below top bar)
+        com.retrocam.app.presentation.camera.components.QuickSettingsPill(
+            visible = showQuickSettings,
+            selectedQuality = photoQuality,
+            selectedRatio = aspectRatio,
+            onQualitySelected = onPhotoQualityChange,
+            onRatioSelected = onAspectRatioChange,
+            onFullSettingsClick = onFullSettingsClick,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 60.dp, start = 16.dp, end = 16.dp)
         )
 
         // Bottom controls
@@ -294,6 +333,26 @@ private fun CameraOverlay(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .navigationBarsPadding()
+            )
+        }
+
+        // Quick Settings Pill (top right)
+        AnimatedVisibility(
+            visible = showQuickSettings,
+            enter = fadeIn(tween(200)) + expandVertically(),
+            exit = fadeOut(tween(200)) + shrinkVertically()
+        ) {
+            QuickSettingsPill(
+                photoQuality = photoQuality,
+                aspectRatio = aspectRatio,
+                onPhotoQualityChange = onPhotoQualityChange,
+                onAspectRatioChange = onAspectRatioChange,
+                onFullSettingsClick = onFullSettingsClick,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .statusBarsPadding()
+                    .width(220.dp)
             )
         }
 
@@ -335,6 +394,8 @@ private fun TopBar(
     onModeToggle: () -> Unit,
     onProControlsToggle: () -> Unit,
     onFilterToggle: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -419,6 +480,24 @@ private fun TopBar(
                             modifier = Modifier.size(20.dp)
                         )
                     }
+                }
+                
+                // Quick Settings button
+                GlassButton(
+                    onClick = { 
+                        if (hapticsEnabled) {
+                            HapticFeedback.lightTap(view)
+                        }
+                        onSettingsClick() 
+                    },
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Quick Settings",
+                        tint = GlassWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }

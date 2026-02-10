@@ -71,6 +71,18 @@ class CameraViewModel @Inject constructor(
         initialValue = true
     )
     
+    val photoQuality: StateFlow<Int> = appPreferences.photoQuality.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 2
+    )
+    
+    val aspectRatio: StateFlow<Int> = appPreferences.aspectRatio.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+    
     init {
         // Observe sound preference and update sound effects
         viewModelScope.launch {
@@ -253,6 +265,19 @@ class CameraViewModel @Inject constructor(
     fun updateFilter(config: FilterConfig) {
         _currentFilter.value = config
         Log.d(TAG, "Filter updated: ${config.type} at ${config.intensity * 100}%")
+    }
+    
+    // Settings methods
+    fun setPhotoQuality(quality: Int) {
+        viewModelScope.launch {
+            appPreferences.setPhotoQuality(quality)
+        }
+    }
+    
+    fun setAspectRatio(ratio: Int) {
+        viewModelScope.launch {
+            appPreferences.setAspectRatio(ratio)
+        }
     }
 
     fun clearCaptureResult() {
