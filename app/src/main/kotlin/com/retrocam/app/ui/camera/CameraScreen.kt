@@ -313,6 +313,7 @@ private fun CameraOverlay(
             loadingThumbnail = loadingThumbnail,
             onCaptureClick = onCaptureClick,
             onGalleryClick = onGalleryClick,
+            onFlipCamera = onFlipCamera,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
