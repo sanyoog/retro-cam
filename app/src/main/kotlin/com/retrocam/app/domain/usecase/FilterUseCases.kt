@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.retrocam.app.domain.model.FilterConfig
 import com.retrocam.app.domain.model.FilterPreset
 import com.retrocam.app.domain.repository.FilterRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
@@ -23,7 +24,7 @@ class ApplyFilterUseCase @Inject constructor(
 class ManagePresetsUseCase @Inject constructor(
     private val filterRepository: FilterRepository
 ) {
-    suspend fun getAll(): List<FilterPreset> {
+    fun getAll(): Flow<List<FilterPreset>> {
         return filterRepository.getPresets()
     }
     

@@ -6,7 +6,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.camera.core.CameraSelector
-import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -81,11 +81,12 @@ class VideoRecorder @Inject constructor(
                 }
             }
 
-            val mediaStoreOutput = FileOutputOptions.Builder(
+            val mediaStoreOutput = MediaStoreOutputOptions.Builder(
                 context.contentResolver,
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            ).build()
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            )
+                .setContentValues(contentValues)
+                .build()
 
             currentRecording = capture.output
                 .prepareRecording(context, mediaStoreOutput)
