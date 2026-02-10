@@ -27,31 +27,28 @@ fun LinearCameraSlider(
     modifier: Modifier = Modifier,
     steps: Int = 0
 ) {
-    var dragOffset by remember { mutableStateOf(0f) }
-    
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(28.dp)
-            .pointerInput(Unit) {
+            .pointerInput(valueRange) {
                 detectTapGestures { offset ->
-                    val position = offset.x / size.width
-                    val newValue = valueRange.start + (valueRange.endInclusive - valueRange.start) * position
-                    onValueChange(newValue.coerceIn(valueRange))
-                }
-            }
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        dragOffset = offset.x
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        val position = change.position.x / size.width
+                    if (size.width > 0) {
+                        val position = (offset.x / size.width).coerceIn(0f, 1f)
                         val newValue = valueRange.start + (valueRange.endInclusive - valueRange.start) * position
                         onValueChange(newValue.coerceIn(valueRange))
                     }
-                )
+                }
+            }
+            .pointerInput(valueRange) {
+                detectDragGestures { change, _ ->
+                    change.consume()
+                    if (size.width > 0) {
+                        val position = (change.position.x / size.width).coerceIn(0f, 1f)
+                        val newValue = valueRange.start + (valueRange.endInclusive - valueRange.start) * position
+                        onValueChange(newValue.coerceIn(valueRange))
+                    }
+                }
             }
     ) {
         val width = size.width

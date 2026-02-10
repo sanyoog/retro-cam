@@ -57,6 +57,12 @@ class SettingsViewModel @Inject constructor(
         initialValue = 1
     )
     
+    val uiTransparency: StateFlow<Int> = appPreferences.uiTransparency.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 70
+    )
+    
     fun toggleSound(enabled: Boolean) {
         viewModelScope.launch {
             appPreferences.setSoundEnabled(enabled)
@@ -96,6 +102,12 @@ class SettingsViewModel @Inject constructor(
     fun setVideoQuality(quality: Int) {
         viewModelScope.launch {
             appPreferences.setVideoQuality(quality)
+        }
+    }
+    
+    fun setUITransparency(transparency: Int) {
+        viewModelScope.launch {
+            appPreferences.setUITransparency(transparency)
         }
     }
 }

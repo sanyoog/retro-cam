@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -43,6 +42,7 @@ fun FilterPill(
     visible: Boolean,
     currentFilter: FilterConfig,
     onFilterChange: (FilterConfig) -> Unit,
+    transparency: Float = 70f,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -62,11 +62,10 @@ fun FilterPill(
             modifier = Modifier
                 .height(80.dp)
                 .clip(RoundedCornerShape(40.dp))
-                .background(Color(0xE6000000)) // 90% black
-                .blur(40.dp)
+                .background(Color.Black.copy(alpha = (100f - transparency) / 100f))
                 .border(
                     width = 1.5.dp,
-                    color = Color(0x4DFFFFFF), // 30% white border
+                    color = Color.White.copy(alpha = ((100f - transparency) / 100f) * 0.3f),
                     shape = RoundedCornerShape(40.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 12.dp)

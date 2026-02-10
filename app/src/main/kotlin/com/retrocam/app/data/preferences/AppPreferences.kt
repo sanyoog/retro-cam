@@ -27,6 +27,7 @@ class AppPreferences @Inject constructor(
         val ASPECT_RATIO = intPreferencesKey("aspect_ratio") // 0=4:3, 1=16:9, 2=1:1, 3=Full
         val TIMER_DURATION = intPreferencesKey("timer_duration") // 0=Off, 3, 5, 10 seconds
         val VIDEO_QUALITY = intPreferencesKey("video_quality") // 0=SD, 1=HD, 2=FHD, 3=UHD
+        val UI_TRANSPARENCY = intPreferencesKey("ui_transparency") // 0-100%
     }
     
     val soundEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -59,6 +60,10 @@ class AppPreferences @Inject constructor(
     
     val videoQuality: Flow<Int> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.VIDEO_QUALITY] ?: 1 // Default: HD
+    }
+    
+    val uiTransparency: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.UI_TRANSPARENCY] ?: 70 // Default: 70%
     }
     
     suspend fun setSoundEnabled(enabled: Boolean) {
@@ -106,6 +111,12 @@ class AppPreferences @Inject constructor(
     suspend fun setVideoQuality(quality: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.VIDEO_QUALITY] = quality.coerceIn(0, 3)
+        }
+    }
+    
+    suspend fun setUITransparency(transparency: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.UI_TRANSPARENCY] = transparency.coerceIn(0, 100)
         }
     }
 }

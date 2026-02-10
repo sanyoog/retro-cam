@@ -8,28 +8,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Glassy frosted panel with blur effect and subtle border
+ * Glassy translucent panel with subtle border
  * Core component for modern glass UI design
+ * @param transparency 0-100, where higher values mean more transparent
  */
 @Composable
 fun GlassPanel(
     modifier: Modifier = Modifier,
+    transparency: Float = 70f,
     content: @Composable () -> Unit
 ) {
+    val alpha = (100f - transparency) / 100f // Convert to alpha (inverse)
+    
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp)) // More rounded for modern look
-            .background(Color(0x4DFFFFFF)) // 30% white - more visible
-            .blur(30.dp) // Stronger blur for better glass effect
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color.Black.copy(alpha = alpha))
             .border(
                 width = 1.5.dp,
-                color = Color(0x66FFFFFF), // 40% white border - more visible
+                color = Color.White.copy(alpha = alpha * 0.3f),
                 shape = RoundedCornerShape(20.dp)
             )
             .padding(20.dp)

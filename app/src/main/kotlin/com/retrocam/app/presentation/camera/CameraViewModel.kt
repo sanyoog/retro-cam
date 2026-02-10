@@ -84,6 +84,12 @@ class CameraViewModel @Inject constructor(
         initialValue = 0
     )
     
+    val uiTransparency: StateFlow<Int> = appPreferences.uiTransparency.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 70
+    )
+    
     init {
         // Observe sound preference and update sound effects
         viewModelScope.launch {

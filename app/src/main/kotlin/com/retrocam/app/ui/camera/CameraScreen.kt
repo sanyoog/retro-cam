@@ -93,6 +93,7 @@ fun CameraScreen(
     
     val photoQuality by viewModel.photoQuality.collectAsStateWithLifecycle()
     val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
+    val uiTransparency by viewModel.uiTransparency.collectAsStateWithLifecycle()
     
     // Load thumbnail when last photo changes
     LaunchedEffect(lastPhotoUri) {
@@ -314,6 +315,7 @@ private fun CameraOverlay(
             onCaptureClick = onCaptureClick,
             onGalleryClick = onGalleryClick,
             onFlipCamera = onFlipCamera,
+            uiTransparency = uiTransparency,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
@@ -334,9 +336,11 @@ private fun CameraOverlay(
                 visible = true,
                 currentFilter = currentFilter,
                 onFilterChange = onFilterChange,
+                transparency = uiTransparency.toFloat(),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 120.dp) // Below the top bar
+                    .statusBarsPadding()
+                    .padding(top = 80.dp) // Below the top bar with status bar padding
             )
         }
 
@@ -377,9 +381,11 @@ private fun CameraOverlay(
                     capabilities = caps,
                     currentSettings = manualSettings,
                     onSettingsChange = onManualSettingsChange,
+                    transparency = uiTransparency.toFloat(),
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 140.dp) // Above the shutter button
+                        .navigationBarsPadding()
+                        .padding(bottom = 120.dp) // Above the shutter button with proper spacing
                 )
             }
         }
@@ -416,6 +422,7 @@ private fun TopBar(
                     onModeToggle() 
                 },
                 modifier = Modifier.height(40.dp),
+                transparency = uiTransparency.toFloat(),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Row(
@@ -450,7 +457,8 @@ private fun TopBar(
                         }
                         onFilterToggle() 
                     },
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(40.dp),
+                    transparency = uiTransparency.toFloat()
                 ) {
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
@@ -469,7 +477,8 @@ private fun TopBar(
                             }
                             onProControlsToggle() 
                         },
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(40.dp),
+                        transparency = uiTransparency.toFloat()
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -488,7 +497,8 @@ private fun TopBar(
                         }
                         onSettingsClick() 
                     },
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(40.dp),
+                    transparency = uiTransparency.toFloat()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -509,6 +519,7 @@ private fun BottomControls(
     onCaptureClick: () -> Unit,
     onGalleryClick: () -> Unit,
     onFlipCamera: () -> Unit,
+    uiTransparency: Int = 70,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -539,7 +550,8 @@ private fun BottomControls(
             // Flip camera button
             GlassButton(
                 onClick = onFlipCamera,
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier.size(56.dp),
+                transparency = uiTransparency.toFloat()
             ) {
                 Icon(
                     imageVector = Icons.Default.FlipCameraAndroid,
@@ -569,6 +581,7 @@ private fun PermissionRequestScreen(
                 .fillMaxWidth()
         ) {
             Column(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -584,6 +597,7 @@ private fun PermissionRequestScreen(
                 
                 Button(
                     onClick = onRequestPermission,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = GlassWhite,
                         contentColor = GlassBlack

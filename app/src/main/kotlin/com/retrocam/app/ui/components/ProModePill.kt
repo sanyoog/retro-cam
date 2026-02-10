@@ -27,7 +27,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,6 +52,7 @@ fun ProModePill(
     capabilities: CameraCapabilities?,
     currentSettings: ManualSettings,
     onSettingsChange: (ManualSettings) -> Unit,
+    transparency: Float = 70f,
     modifier: Modifier = Modifier
 ) {
     var selectedSetting by remember { mutableStateOf<ProSetting?>(null) }
@@ -101,11 +101,10 @@ fun ProModePill(
                 modifier = Modifier
                     .height(68.dp)
                     .clip(RoundedCornerShape(34.dp))
-                    .background(Color(0xE6000000)) // 90% black for stronger glass effect
-                    .blur(40.dp)
+                    .background(Color.Black.copy(alpha = (100f - transparency) / 100f))
                     .border(
                         width = 1.5.dp,
-                        color = Color(0x4DFFFFFF), // 30% white border
+                        color = Color.White.copy(alpha = ((100f - transparency) / 100f) * 0.3f),
                         shape = RoundedCornerShape(34.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 10.dp)

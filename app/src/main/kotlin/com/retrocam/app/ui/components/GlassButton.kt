@@ -12,30 +12,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Glass-style button with frosted background
+ * Glass-style button with translucent background
  * Used for UI controls throughout the app
+ * @param transparency 0-100, where higher values mean more transparent
  */
 @Composable
 fun GlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    transparency: Float = 70f,
     shape: androidx.compose.ui.graphics.Shape = CircleShape,
     content: @Composable () -> Unit
 ) {
+    val alpha = (100f - transparency) / 100f // Convert to alpha (inverse)
+    
     Box(
         modifier = modifier
             .clip(shape)
-            .background(Color(0x40FFFFFF)) // 25% white - more visible
-            .blur(20.dp) // Add blur for glass effect
+            .background(Color.Black.copy(alpha = alpha))
             .border(
                 width = 1.5.dp,
-                color = Color(0x59FFFFFF), // 35% white border - more visible
+                color = Color.White.copy(alpha = alpha * 0.3f),
                 shape = shape
             )
             .clickable(

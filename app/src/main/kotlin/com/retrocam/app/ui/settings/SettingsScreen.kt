@@ -53,6 +53,7 @@ fun SettingsScreen(
     val aspectRatio by viewModel.aspectRatio.collectAsStateWithLifecycle()
     val timerDuration by viewModel.timerDuration.collectAsStateWithLifecycle()
     val videoQuality by viewModel.videoQuality.collectAsStateWithLifecycle()
+    val uiTransparency by viewModel.uiTransparency.collectAsStateWithLifecycle()
     
     Box(
         modifier = Modifier
@@ -189,6 +190,18 @@ fun SettingsScreen(
                     )
                 }
                 
+                // Appearance Section
+                SettingsSection(title = "Appearance") {
+                    SettingsSliderItem(
+                        title = "UI Transparency",
+                        description = "Adjust translucency of controls",
+                        value = uiTransparency,
+                        valueRange = 0f..100f,
+                        onValueChange = { viewModel.setUITransparency(it.toInt()) },
+                        valueLabel = { "${it.toInt()}%" }
+                    )
+                }
+                
                 // About Section
                 SettingsSection(title = "About") {
                     SettingsActionItem(
@@ -210,7 +223,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Made with ❤️ by",
+                            text = "Made by",
                             style = MaterialTheme.typography.bodySmall,
                             color = GlassWhite.copy(alpha = 0.6f)
                         )
@@ -576,6 +589,60 @@ private fun PickerOption(
                 modifier = Modifier.size(20.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun SettingsSliderItem(
+    title: String,
+    description: String,
+    value: Int,
+    valueRange: ClosedFloatingPointRange<Float>,
+    onValueChange: (Float) -> Unit,
+    valueLabel: (Float) -> String
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = GlassWhite
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GlassWhite.copy(alpha = 0.5f)
+                )
+            }
+            
+            Text(
+                text = valueLabel(value.toFloat()),
+                style = MaterialTheme.typography.bodyMedium,
+                color = GlassWhite.copy(alpha = 0.7f)
+            )
+        }
+        
+        Slider(
+            value = value.toFloat(),
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            colors = SliderDefaults.colors(
+                thumbColor = GlassWhite,
+                activeTrackColor = GlassWhite.copy(alpha = 0.7f),
+                inactiveTrackColor = GlassWhite.copy(alpha = 0.2f)
+            )
+        )
     }
 }
 
