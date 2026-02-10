@@ -1,3 +1,5 @@
+package com.retrocam.app.presentation.camera
+
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
