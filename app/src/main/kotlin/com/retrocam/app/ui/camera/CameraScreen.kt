@@ -393,7 +393,6 @@ private fun TopBar(
     onProControlsToggle: () -> Unit,
     onFilterToggle: () -> Unit,
     onSettingsClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -508,6 +507,7 @@ private fun BottomControls(
     loadingThumbnail: Boolean,
     onCaptureClick: () -> Unit,
     onGalleryClick: () -> Unit,
+    onFlipCamera: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(

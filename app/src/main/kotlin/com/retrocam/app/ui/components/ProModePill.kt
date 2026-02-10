@@ -126,9 +126,10 @@ fun ProModePill(
                     }
                     
                     // Shutter Speed
-                    capabilities?.exposureTimeRange?.let {
+                    capabilities?.exposureTimeRange?.let { range ->
                         val shutterValue = currentSettings.shutterSpeed?.let { speed ->
-                            "1/${(1000000000 / speed).roundToInt()}"
+                            val speedInNs = speed.toDouble()
+                            "1/${(1000000000.0 / speedInNs).toInt()}"
                         } ?: "AUTO"
                         
                         CircularProControl(
@@ -253,18 +254,22 @@ private fun LinearSliderControl(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val (label, value, range, formatter, onChange) = when (setting) {
+    val label: String
+    val value: Float
+    val range: ClosedFloatingPointRange<Float>
+    val formatter: (Float) -> String
+    val onChange: (Float) -> Unit
+    
+    when (setting) {
         ProSetting.ISO -> {
             val isoRange = capabilities?.isoRange ?: (100..3200)
             val currentIso = (currentSettings.iso ?: isoRange.first).toFloat()
             
-            Tuple5(
-                "ISO",
-                currentIso,
-                isoRange.first.toFloat()..isoRange.last.toFloat(),
-                { it.roundToInt().toString() },
-                { value: Float -> onValueChange(currentSettings.copy(iso = value.roundToInt())) }
-            )
+            label = "ISO"
+            value = currentIso
+            range = isoRange.first.toFloat()..isoRange.last.toFloat()
+            formatter = { v -> v.roundToInt().toString() }
+            onChange = { v -> onValueChange(currentSettings.copy(iso = v.roundToInt())) }
         }
         ProSetting.SHUTTER -> {
             val expRange = capabilities?.exposureTimeRange ?: (1_000_000L..1_000_000_000L)
@@ -273,57 +278,49 @@ private fun LinearSliderControl(
             val currentShutter = (currentSettings.shutterSpeed?.div(1_000_000)?.toFloat() 
                 ?: minMs.toFloat())
             
-            Tuple5(
-                "SHUTTER SPEED",
-                currentShutter,
-                minMs.toFloat()..maxMs.toFloat().coerceAtMost(1000f),
-                { "1/${(1000 / it).roundToInt()}s" },
-                { value: Float -> onValueChange(currentSettings.copy(shutterSpeed = (value * 1_000_000).toLong())) }
-            )
+            label = "SHUTTER SPEED"
+            value = currentShutter
+            range = minMs.toFloat()..maxMs.toFloat().coerceAtMost(1000f)
+            formatter = { v -> "1/${(1000.0 / v).toInt()}s" }
+            onChange = { v -> onValueChange(currentSettings.copy(shutterSpeed = (v * 1_000_000).toLong())) }
         }
         ProSetting.WHITE_BALANCE -> {
             val currentWB = currentSettings.whiteBalance?.toFloat() ?: 5500f
             
-            Tuple5(
-                "WHITE BALANCE",
-                currentWB,
-                2000f..10000f,
-                { "${it.roundToInt()}K" },
-                { value: Float -> onValueChange(currentSettings.copy(whiteBalance = value.roundToInt())) }
-            )
+            label = "WHITE BALANCE"
+            value = currentWB
+            range = 2000f..10000f
+            formatter = { v -> "${v.roundToInt()}K" }
+            onChange = { v -> onValueChange(currentSettings.copy(whiteBalance = v.roundToInt())) }
         }
         ProSetting.FOCUS -> {
-            val focusRange = capabilities?.focusDistanceRange?.let { it.start..it.endInclusive } ?: (0f..1f)
+            val focusRange = capabilities?.focusDistanceRange?.let { r -> r.start..r.endInclusive } ?: (0f..1f)
             val currentFocus = currentSettings.focusDistance ?: 0f
             
-            Tuple5(
-                "FOCUS",
-                currentFocus,
-                focusRange,
-                { 
-                    when {
-                        it < 0.1f -> "∞ Infinity"
-                        it < 1f -> "${(1f / it).roundToInt()}m"
-                        else -> "${(1f / it * 100).roundToInt()}cm"
-                    }
-                },
-                { value: Float -> onValueChange(currentSettings.copy(focusDistance = value)) }
-            )
+            label = "FOCUS"
+            value = currentFocus
+            range = focusRange
+            formatter = { v -> 
+                when {
+                    v < 0.1f -> "∞ Infinity"
+                    v < 1f -> "${(1f / v).roundToInt()}m"
+                    else -> "${(1f / v * 100f).roundToInt()}cm"
+                }
+            }
+            onChange = { v -> onValueChange(currentSettings.copy(focusDistance = v)) }
         }
         ProSetting.EXPOSURE -> {
             val evRange = capabilities?.exposureCompensationRange ?: (-6..6)
             val currentEV = currentSettings.exposureCompensation?.toFloat() ?: 0f
             
-            Tuple5(
-                "EXPOSURE COMPENSATION",
-                currentEV,
-                evRange.first.toFloat()..evRange.last.toFloat(),
-                { 
-                    val ev = it.roundToInt()
-                    if (ev > 0) "+$ev EV" else "$ev EV"
-                },
-                { value: Float -> onValueChange(currentSettings.copy(exposureCompensation = value.roundToInt())) }
-            )
+            label = "EXPOSURE COMPENSATION"
+            value = currentEV
+            range = evRange.first.toFloat()..evRange.last.toFloat()
+            formatter = { v -> 
+                val ev = v.roundToInt()
+                if (ev > 0) "+$ev EV" else "$ev EV"
+            }
+            onChange = { v -> onValueChange(currentSettings.copy(exposureCompensation = v.roundToInt())) }
         }
     }
     
@@ -374,12 +371,3 @@ private fun LinearSliderControl(
         }
     }
 }
-
-// Helper data class for tuple
-private data class Tuple5<A, B, C, D, E>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D,
-    val fifth: E
-)
