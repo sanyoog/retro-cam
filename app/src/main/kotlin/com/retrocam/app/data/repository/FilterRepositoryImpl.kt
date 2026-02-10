@@ -8,7 +8,11 @@ import com.retrocam.app.domain.model.FilterPreset
 import com.retrocam.app.domain.repository.FilterRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,30 +25,50 @@ class FilterRepositoryImpl @Inject constructor(
     private val filterProcessor: FilterProcessor
 ) : FilterRepository {
     
-    private val presets = mutableListOf<FilterPreset>()
+    private val _presets = MutableStateFlow<List<FilterPreset>>(emptyList())
+    private var currentFilterConfig: FilterConfig = FilterConfig()
     
     override suspend fun applyFilter(bitmap: Bitmap, config: FilterConfig): Bitmap = 
         withContext(Dispatchers.Default) {
+            currentFilterConfig = config
             filterProcessor.applyFilter(bitmap, config)
         }
     
-    override suspend fun getPresets(): List<FilterPreset> = withContext(Dispatchers.IO) {
-        // TODO: Load from persistent storage (SharedPreferences or Room DB)
-        presets.toList()
-    }
+    override fun getPresets(): Flow<List<FilterPreset>> = _presets.asStateFlow()
     
     override suspend fun savePreset(preset: FilterPreset) {
         withContext(Dispatchers.IO) {
             // TODO: Save to persistent storage
-            presets.removeAll { it.id == preset.id }
-            presets.add(preset)
+            val updatedList = _presets.value.toMutableList()
+            updatedList.removeAll { it.id == preset.id }
+            updatedList.add(preset)
+            _presets.value = updatedList
         }
     }
     
     override suspend fun deletePreset(presetId: String) {
         withContext(Dispatchers.IO) {
-            presets.removeAll { it.id == presetId }
+            _presets.value = _presets.value.filter { it.id != presetId }
         }
+    }
+    
+    override suspend fun applyPreset(presetId: String) {
+        withContext(Dispatchers.Default) {
+            val preset = _presets.value.find { it.id == presetId }
+            preset?.let {
+                currentFilterConfig = it.config
+            }
+        }
+    }
+    
+    override suspend fun saveCurrentAsPreset(name: String) {
+        val newPreset = FilterPreset(
+            id = UUID.randomUUID().toString(),
+            name = name,
+            config = currentFilterConfig,
+            isBuiltIn = false
+        )
+        savePreset(newPreset)
     }
     
     override fun release() {

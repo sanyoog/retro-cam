@@ -23,6 +23,10 @@ class AppPreferences @Inject constructor(
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
         val PHOTO_QUALITY = intPreferencesKey("photo_quality") // 0=Low, 1=Medium, 2=High
         val SAVE_TO_DEVICE = booleanPreferencesKey("save_to_device")
+        val GRID_ENABLED = booleanPreferencesKey("grid_enabled")
+        val ASPECT_RATIO = intPreferencesKey("aspect_ratio") // 0=4:3, 1=16:9, 2=1:1, 3=Full
+        val TIMER_DURATION = intPreferencesKey("timer_duration") // 0=Off, 3, 5, 10 seconds
+        val VIDEO_QUALITY = intPreferencesKey("video_quality") // 0=SD, 1=HD, 2=FHD, 3=UHD
     }
     
     val soundEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -39,6 +43,22 @@ class AppPreferences @Inject constructor(
     
     val saveToDevice: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.SAVE_TO_DEVICE] ?: true
+    }
+    
+    val gridEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.GRID_ENABLED] ?: false
+    }
+    
+    val aspectRatio: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.ASPECT_RATIO] ?: 0 // Default: 4:3
+    }
+    
+    val timerDuration: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.TIMER_DURATION] ?: 0 // Default: Off
+    }
+    
+    val videoQuality: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.VIDEO_QUALITY] ?: 1 // Default: HD
     }
     
     suspend fun setSoundEnabled(enabled: Boolean) {
@@ -62,6 +82,30 @@ class AppPreferences @Inject constructor(
     suspend fun setSaveToDevice(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SAVE_TO_DEVICE] = enabled
+        }
+    }
+    
+    suspend fun setGridEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GRID_ENABLED] = enabled
+        }
+    }
+    
+    suspend fun setAspectRatio(ratio: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ASPECT_RATIO] = ratio.coerceIn(0, 3)
+        }
+    }
+    
+    suspend fun setTimerDuration(duration: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TIMER_DURATION] = duration
+        }
+    }
+    
+    suspend fun setVideoQuality(quality: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.VIDEO_QUALITY] = quality.coerceIn(0, 3)
         }
     }
 }
