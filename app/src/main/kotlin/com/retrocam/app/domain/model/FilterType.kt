@@ -41,5 +41,6 @@ data class FilterPreset(
     val name: String,
     val filterType: FilterType,
     val intensity: Float,
+    val isBuiltIn: Boolean = false,
     val timestamp: Long = System.currentTimeMillis()
 )

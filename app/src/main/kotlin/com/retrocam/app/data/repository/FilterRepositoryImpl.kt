@@ -56,7 +56,10 @@ class FilterRepositoryImpl @Inject constructor(
         withContext(Dispatchers.Default) {
             val preset = _presets.value.find { it.id == presetId }
             preset?.let {
-                currentFilterConfig = it.config
+                currentFilterConfig = FilterConfig(
+                    type = it.filterType,
+                    intensity = it.intensity
+                )
             }
         }
     }
@@ -65,7 +68,8 @@ class FilterRepositoryImpl @Inject constructor(
         val newPreset = FilterPreset(
             id = UUID.randomUUID().toString(),
             name = name,
-            config = currentFilterConfig,
+            filterType = currentFilterConfig.type,
+            intensity = currentFilterConfig.intensity,
             isBuiltIn = false
         )
         savePreset(newPreset)
