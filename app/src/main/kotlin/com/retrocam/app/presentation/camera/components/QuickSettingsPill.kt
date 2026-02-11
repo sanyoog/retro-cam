@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +42,11 @@ fun QuickSettingsPill(
     onQualitySelected: (Int) -> Unit,
     onRatioSelected: (Int) -> Unit,
     onFullSettingsClick: () -> Unit,
+    transparency: Float = 70f,
     modifier: Modifier = Modifier
 ) {
+    val alpha = (100f - transparency) / 100f
+    
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(animationSpec = spring()) + expandVertically(
@@ -61,8 +63,7 @@ fun QuickSettingsPill(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.Black.copy(alpha = 0.75f))
-                .blur(20.dp)
+                .background(Color.Black.copy(alpha = alpha))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -187,7 +188,7 @@ private fun QuickSettingOption(
         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
         fontSize = 12.sp,
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(
                 if (selected) Color.White
                 else Color.White.copy(alpha = 0.15f)

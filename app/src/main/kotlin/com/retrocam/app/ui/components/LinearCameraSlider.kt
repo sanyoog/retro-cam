@@ -32,56 +32,67 @@ fun LinearCameraSlider(
             .fillMaxWidth()
             .height(28.dp)
             .pointerInput(valueRange) {
-                detectTapGestures { offset ->
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
                     if (size.width > 0) {
-                        val position = (offset.x / size.width).coerceIn(0f, 1f)
-                        val newValue = valueRange.start + (valueRange.endInclusive - valueRange.start) * position
-                        onValueChange(newValue.coerceIn(valueRange))
+                        // Calculate sensitivity - more drag needed for value change
+                        val sensitivity = 0.003f * (valueRange.endInclusive - valueRange.start)
+                        val delta = -dragAmount.x * sensitivity
+                        val newValue = (value + delta).coerceIn(valueRange)
+                        onValueChange(newValue)
                     }
                 }
             }
             .pointerInput(valueRange) {
-                detectDragGestures { change, _ ->
-                    change.consume()
-                    if (size.width > 0) {
-                        val position = (change.position.x / size.width).coerceIn(0f, 1f)
-                        val newValue = valueRange.start + (valueRange.endInclusive - valueRange.start) * position
-                        onValueChange(newValue.coerceIn(valueRange))
-                    }
+                detectTapGestures { offset ->
+                    // Tap to adjust based on distance from center
+                    val centerX = size.width / 2
+                    val distanceFromCenter = offset.x - centerX
+                    val sensitivity = 0.15f * (valueRange.endInclusive - valueRange.start)
+                    val delta = distanceFromCenter / size.width * sensitivity
+                    val newValue = (value + delta).coerceIn(valueRange)
+                    onValueChange(newValue)
                 }
             }
     ) {
         val width = size.width
         val height = size.height
         val centerY = height / 2
+        val centerX = width / 2
         
-        // Calculate current position
+        // Calculate normalized position (0 to 1)
         val normalizedValue = (value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
-        val thumbX = width * normalizedValue
         
-        // Draw tick marks
-        val tickCount = if (steps > 0) steps + 1 else 21
-        val tickSpacing = width / (tickCount - 1)
+        // Draw tick marks - they "slide" past the center indicator
+        val tickCount = if (steps > 0) steps + 1 else 31
+        val tickSpacing = width / 8f // Spacing between ticks
         
-        for (i in 0 until tickCount) {
-            val tickX = i * tickSpacing
-            val distanceFromThumb = kotlin.math.abs(tickX - thumbX)
-            val maxDistance = width * 0.2f
+        // Calculate offset to make ticks appear to move
+        val offset = -normalizedValue * tickSpacing * (tickCount - 1)
+        
+        for (i in -10..tickCount + 10) {
+            val tickX = centerX + offset + (i * tickSpacing)
             
-            // Calculate tick properties based on distance from thumb
-            val alpha = if (distanceFromThumb < maxDistance) {
-                1f - (distanceFromThumb / maxDistance) * 0.7f
+            // Only draw visible ticks
+            if (tickX < -20 || tickX > width + 20) continue
+            
+            val distanceFromCenter = kotlin.math.abs(tickX - centerX)
+            val maxDistance = width * 0.25f
+            
+            // Calculate tick properties based on distance from center
+            val alpha = if (distanceFromCenter < maxDistance) {
+                1f - (distanceFromCenter / maxDistance) * 0.7f
             } else {
                 0.3f
             }
             
             val tickHeight = if (i % 5 == 0) {
-                if (distanceFromThumb < maxDistance) 16.dp.toPx() else 12.dp.toPx()
+                if (distanceFromCenter < tickSpacing * 2) 16.dp.toPx() else 12.dp.toPx()
             } else {
-                if (distanceFromThumb < maxDistance) 10.dp.toPx() else 6.dp.toPx()
+                if (distanceFromCenter < tickSpacing * 2) 10.dp.toPx() else 6.dp.toPx()
             }
             
-            val strokeWidth = if (distanceFromThumb < maxDistance) 2.5.dp.toPx() else 1.5.dp.toPx()
+            val strokeWidth = if (distanceFromCenter < tickSpacing * 2) 2.5.dp.toPx() else 1.5.dp.toPx()
             
             drawLine(
                 color = GlassWhite.copy(alpha = alpha),
@@ -92,26 +103,26 @@ fun LinearCameraSlider(
             )
         }
         
-        // Draw center indicator line (thumb position)
+        // Draw fixed center indicator (like camera lens marking)
         drawLine(
             color = GlassWhite,
-            start = Offset(thumbX, centerY - 20.dp.toPx()),
-            end = Offset(thumbX, centerY + 20.dp.toPx()),
-            strokeWidth = 3.dp.toPx(),
+            start = Offset(centerX, centerY - 22.dp.toPx()),
+            end = Offset(centerX, centerY + 22.dp.toPx()),
+            strokeWidth = 3.5.dp.toPx(),
             cap = StrokeCap.Round
         )
         
-        // Draw glowing circle at thumb
+        // Draw glowing circle at center
         drawCircle(
-            color = GlassWhite.copy(alpha = 0.3f),
-            radius = 12.dp.toPx(),
-            center = Offset(thumbX, centerY)
+            color = GlassWhite.copy(alpha = 0.4f),
+            radius = 14.dp.toPx(),
+            center = Offset(centerX, centerY)
         )
         
         drawCircle(
             color = GlassWhite,
-            radius = 6.dp.toPx(),
-            center = Offset(thumbX, centerY)
+            radius = 7.dp.toPx(),
+            center = Offset(centerX, centerY)
         )
     }
 }

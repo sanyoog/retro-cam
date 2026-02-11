@@ -56,7 +56,7 @@ import com.retrocam.app.ui.components.GalleryThumbnail
 import com.retrocam.app.ui.components.GlassButton
 import com.retrocam.app.ui.components.GlassPanel
 import com.retrocam.app.ui.components.ProModePill
-import com.retrocam.app.ui.components.QuickSettingsPill
+
 import com.retrocam.app.ui.components.ShutterButton
 import com.retrocam.app.ui.theme.GlassBlack
 import com.retrocam.app.ui.theme.GlassWhite
@@ -194,12 +194,18 @@ fun CameraScreen(
                         viewModel.toggleCameraMode() 
                     },
                     onManualSettingsChange = { viewModel.updateManualSettings(it) },
-                    onFilterToggle = { showFilterPanel = !showFilterPanel },
+                    onFilterToggle = { 
+                        showQuickSettings = false
+                        showFilterPanel = !showFilterPanel 
+                    },
                     onFilterChange = { viewModel.updateFilter(it) },
                     onGalleryClick = { 
                         GalleryOpener.openGallery(context)
                     },
-                    onSettingsClick = { showQuickSettings = !showQuickSettings },
+                    onSettingsClick = { 
+                        showFilterPanel = false
+                        showQuickSettings = !showQuickSettings 
+                    },
                     onPhotoQualityChange = { viewModel.setPhotoQuality(it) },
                     onAspectRatioChange = { viewModel.setAspectRatio(it) },
                     onFullSettingsClick = { onNavigateToSettings() },
@@ -273,20 +279,12 @@ private fun CameraOverlay(
     uiTransparency: Int,
     modifier: Modifier = Modifier
 ) {
-    var showProControls by remember { mutableStateOf(false) }
-    
-    // Show controls panel when in Pro mode
-    LaunchedEffect(cameraMode) {
-        showProControls = cameraMode == CameraMode.PRO
-    }
-
     Box(modifier = modifier) {
         // Top bar
         TopBar(
             cameraMode = cameraMode,
             hapticsEnabled = hapticsEnabled,
             onModeToggle = onModeToggle,
-            onProControlsToggle = { showProControls = !showProControls },
             onFilterToggle = onFilterToggle,
             onSettingsClick = onSettingsClick,
             uiTransparency = uiTransparency,
@@ -304,6 +302,7 @@ private fun CameraOverlay(
             onQualitySelected = onPhotoQualityChange,
             onRatioSelected = onAspectRatioChange,
             onFullSettingsClick = onFullSettingsClick,
+            transparency = uiTransparency.toFloat(),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -312,64 +311,8 @@ private fun CameraOverlay(
         )
 
         // Bottom controls
-        BottomControls(
-            galleryThumbnail = galleryThumbnail,
-            loadingThumbnail = loadingThumbnail,
-            onCaptureClick = onCaptureClick,
-            onGalleryClick = onGalleryClick,
-            onFlipCamera = onFlipCamera,
-            uiTransparency = uiTransparency,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-        )
-
-        // Filter pill (below top buttons)
         AnimatedVisibility(
-            visible = showFilterPanel,
-            enter = fadeIn(spring()) + scaleIn(
-                initialScale = 0.8f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy
-                )
-            ),
-            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 80.dp)
-        ) {
-            FilterPill(
-                visible = true,
-                currentFilter = currentFilter,
-                onFilterChange = onFilterChange,
-                transparency = uiTransparency.toFloat()
-            )
-        }
-
-        // Quick Settings Pill (top right)
-        AnimatedVisibility(
-            visible = showQuickSettings,
-            enter = fadeIn(tween(200)) + expandVertically(),
-            exit = fadeOut(tween(200)) + shrinkVertically()
-        ) {
-            QuickSettingsPill(
-                photoQuality = photoQuality,
-                aspectRatio = aspectRatio,
-                onPhotoQualityChange = onPhotoQualityChange,
-                onAspectRatioChange = onAspectRatioChange,
-                onFullSettingsClick = onFullSettingsClick,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .statusBarsPadding()
-                    .width(220.dp)
-            )
-        }
-
-        // Pro mode pill (above shutter button)
-        AnimatedVisibility(
-            visible = showProControls && cameraCapabilities != null,
+            visible = cameraMode == CameraMode.PRO && cameraCapabilities != null,
             enter = fadeIn(spring()) + scaleIn(
                 initialScale = 0.8f,
                 animationSpec = spring(
@@ -400,7 +343,6 @@ private fun TopBar(
     cameraMode: CameraMode,
     hapticsEnabled: Boolean,
     onModeToggle: () -> Unit,
-    onProControlsToggle: () -> Unit,
     onFilterToggle: () -> Unit,
     onSettingsClick: () -> Unit,
     uiTransparency: Int,
@@ -470,27 +412,6 @@ private fun TopBar(
                         tint = GlassWhite,
                         modifier = Modifier.size(20.dp)
                     )
-                }
-                
-                // Pro controls toggle (only visible in Pro mode)
-                if (cameraMode == CameraMode.PRO) {
-                    GlassButton(
-                        onClick = { 
-                            if (hapticsEnabled) {
-                                HapticFeedback.lightTap(view)
-                            }
-                            onProControlsToggle() 
-                        },
-                        modifier = Modifier.size(40.dp),
-                        transparency = uiTransparency.toFloat()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Controls",
-                            tint = GlassWhite,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                 }
                 
                 // Quick Settings button
