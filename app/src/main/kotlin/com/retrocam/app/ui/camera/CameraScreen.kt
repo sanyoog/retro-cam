@@ -311,28 +311,17 @@ private fun CameraOverlay(
         )
 
         // Filter Pill (below top bar)
-        AnimatedVisibility(
+        FilterPill(
             visible = showFilterPanel,
-            enter = fadeIn(spring()) + scaleIn(
-                initialScale = 0.8f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy
-                )
-            ),
-            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f),
+            currentFilter = currentFilter,
+            onFilterChange = onFilterChange,
+            transparency = uiTransparency.toFloat(),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(top = 60.dp, start = 16.dp, end = 16.dp)
-        ) {
-            FilterPill(
-                visible = true,
-                selectedFilter = currentFilter,
-                onFilterSelected = onFilterChange,
-                transparency = uiTransparency.toFloat()
-            )
-        }
+        )
 
         // Bottom Controls (Shutter, Gallery, Flip Camera)
         BottomControls(
