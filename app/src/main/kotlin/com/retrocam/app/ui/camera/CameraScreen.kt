@@ -333,17 +333,17 @@ private fun CameraOverlay(
                     dampingRatio = Spring.DampingRatioMediumBouncy
                 )
             ),
-            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f)
+            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 80.dp)
         ) {
             FilterPill(
                 visible = true,
                 currentFilter = currentFilter,
                 onFilterChange = onFilterChange,
-                transparency = uiTransparency.toFloat(),
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 80.dp) // Below the top bar with status bar padding
+                transparency = uiTransparency.toFloat()
             )
         }
 
@@ -376,7 +376,11 @@ private fun CameraOverlay(
                     dampingRatio = Spring.DampingRatioMediumBouncy
                 )
             ),
-            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f)
+            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 120.dp)
         ) {
             cameraCapabilities?.let { caps ->
                 ProModePill(
@@ -384,11 +388,7 @@ private fun CameraOverlay(
                     capabilities = caps,
                     currentSettings = manualSettings,
                     onSettingsChange = onManualSettingsChange,
-                    transparency = uiTransparency.toFloat(),
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
-                        .padding(bottom = 120.dp) // Above the shutter button with proper spacing
+                    transparency = uiTransparency.toFloat()
                 )
             }
         }
