@@ -310,7 +310,44 @@ private fun CameraOverlay(
                 .padding(top = 60.dp, start = 16.dp, end = 16.dp)
         )
 
-        // Bottom controls
+        // Filter Pill (below top bar)
+        AnimatedVisibility(
+            visible = showFilterPanel,
+            enter = fadeIn(spring()) + scaleIn(
+                initialScale = 0.8f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy
+                )
+            ),
+            exit = fadeOut(spring()) + scaleOut(targetScale = 0.8f),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 60.dp, start = 16.dp, end = 16.dp)
+        ) {
+            FilterPill(
+                visible = true,
+                selectedFilter = currentFilter,
+                onFilterSelected = onFilterChange,
+                transparency = uiTransparency.toFloat()
+            )
+        }
+
+        // Bottom Controls (Shutter, Gallery, Flip Camera)
+        BottomControls(
+            galleryThumbnail = galleryThumbnail,
+            loadingThumbnail = loadingThumbnail,
+            onCaptureClick = onCaptureClick,
+            onGalleryClick = onGalleryClick,
+            onFlipCamera = onFlipCamera,
+            uiTransparency = uiTransparency,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+        )
+
+        // Pro Mode Controls
         AnimatedVisibility(
             visible = cameraMode == CameraMode.PRO && cameraCapabilities != null,
             enter = fadeIn(spring()) + scaleIn(
